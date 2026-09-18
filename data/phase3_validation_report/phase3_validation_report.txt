@@ -1,0 +1,55 @@
+
+============================================================================
+  STELLANTIS VIRTUAL EMT — PHASE 3 VALIDATION ENGINE EXECUTION
+============================================================================
+Execution started at: 2026-09-08 23:49:22
+
+[*] Loading Virtual EMT System & Quality Validation Engine...
+    [OK] Loaded trained AI models (Curve Regressors + XGB/RF Classifiers)
+    [OK] Initialized Golden Curve Library with mass compensation
+    [OK] Initialized Arrhenius Cure Kinetics Engine (k=12.0)
+    [OK] Initialized Multi-Criteria Quality Validation Engine
+
+[*] Loaded 300 trials from ALL_OVENS_metadata.csv
+    Evaluating on 60 holdout test trials (stratified 20% sample)
+    OK trials: 46 | NG trials: 14
+
+============================================================================
+  EXECUTING MULTI-CRITERIA QUALITY VALIDATION
+============================================================================
+
+============================================================================
+  PHASE 3 VALIDATION ENGINE AUDIT METRICS
+============================================================================
+
+>>> Dual-Verification Concordance:
+    AI Model Accuracy vs Ground Truth     : 85.0%
+    Physics Rules Accuracy vs Ground Truth: 53.3%
+    AI-Physics Agreement Concordance Rate : 65.0%
+
+    Concordance Breakdown (AI vs Physics):
+      - AI OK  + Physics OK  [Certified Pass]    : 27 trials
+      - AI NG  + Physics NG  [Confirmed Reject]   : 12 trials
+      - AI OK  + Physics NG  [Quality Hold]       : 14 trials
+      - AI NG  + Physics OK  [Early Warning Alert]:  7 trials
+
+>>> Cure Quality Index (CQI) Analysis (0-100%):
+    Mean CQI for OK Cycles : 77.5% (High Quality Standard)
+    Mean CQI for NG Cycles : 72.6% (Significant Thermal Deficit)
+    Quality Separation Margin: 4.9%
+
+============================================================================
+  EXPORTING DIGITAL QUALITY CERTIFICATES
+============================================================================
+[OK] Generated Certified PASS Certificate: C:\Users\user\Pictures\stellantis\data\phase3_validation_report\sample_audit_OK.html
+[OK] Generated REJECTED (NG) Certificate : C:\Users\user\Pictures\stellantis\data\phase3_validation_report\sample_audit_NG.html
+
+============================================================================
+  GENERATING PHASE 3 VISUAL COMPLIANCE CHARTS
+============================================================================
+[SAVED] C:\Users\user\Pictures\stellantis\data\phase3_validation_report\01_tolerance_envelope_overlay.png
+[SAVED] C:\Users\user\Pictures\stellantis\data\phase3_validation_report\02_cure_index_compliance_matrix.png
+[SAVED] C:\Users\user\Pictures\stellantis\data\phase3_validation_report\03_dual_verdict_agreement.png
+[SAVED] C:\Users\user\Pictures\stellantis\data\phase3_validation_report\04_cqi_distribution_by_tier.png
+
+[DONE] Phase 3 Validation Engine execution completed in 19.0s.

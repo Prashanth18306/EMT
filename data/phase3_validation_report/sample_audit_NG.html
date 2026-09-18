@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BYK Gardner — ED OVEN 3/08/2026 — temp-chart V2.3</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #e8ecf0;
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            color: #111;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Action Toolbar (Hidden in Print) */
+        .toolbar {
+            width: 100%;
+            max-width: 1120px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toolbar-title {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .tool-btn {
+            background: #334155;
+            color: #fff;
+            border: 1px solid #475569;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .tool-btn:hover {
+            background: #475569;
+            border-color: #64748b;
+        }
+        .tool-btn.primary {
+            background: #0284c7;
+            border-color: #0369a1;
+        }
+        .tool-btn.primary:hover {
+            background: #0369a1;
+        }
+
+        /* Page Container (A4 Landscape aspect) */
+        .report-page {
+            width: 100%;
+            max-width: 1120px;
+            background: #ffffff;
+            border: 1px solid #c5c5c5;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+            padding: 18px 24px 14px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid #222;
+        }
+        .byk-logo {
+            font-size: 20px;
+            font-weight: 900;
+            color: #707070;
+            letter-spacing: 0.5px;
+            font-family: Arial, sans-serif;
+        }
+        .top-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #111;
+            letter-spacing: 0.5px;
+        }
+        .db-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #222;
+        }
+        .status-pill {
+            display: inline-block;
+            width: 32px;
+            height: 16px;
+            border: 1px solid #777;
+            border-radius: 8px;
+            background: #fff;
+            position: relative;
+        }
+        .status-indicator-green {
+            width: 14px;
+            height: 14px;
+            background: #00a651;
+            border-radius: 50%;
+            position: absolute;
+            right: 1px;
+            top: 0px;
+        }
+
+        /* Upper Section: Chart + Right Side Panels */
+        .upper-section {
+            display: flex;
+            margin-top: 10px;
+            margin-bottom: 12px;
+            gap: 14px;
+        }
+        .chart-col {
+            flex: 1 1 76%;
+            display: flex;
+            flex-direction: column;
+        }
+        .side-col {
+            flex: 0 0 24%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Info & Comments Boxes */
+        .byk-box {
+            border: 1px solid #777;
+            background: #fff;
+        }
+        .byk-box-hdr {
+            background: #d4d4d4;
+            color: #666;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            padding: 3px 0;
+            border-bottom: 1px solid #777;
+        }
+        .byk-box-body {
+            padding: 6px 8px;
+            font-size: 10.5px;
+            line-height: 1.35;
+        }
+        .info-entry {
+            display: flex;
+            margin-bottom: 2px;
+        }
+        .info-lbl {
+            width: 80px;
+            color: #111;
+            font-weight: 600;
+        }
+        .info-val {
+            color: #222;
+            flex: 1;
+        }
+        .comments-val {
+            font-size: 11px;
+            padding: 4px 2px;
+        }
+
+        /* Lower Section: 12-Sensor Table */
+        .table-section {
+            width: 100%;
+            margin-top: 4px;
+        }
+        .byk-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1.2px solid #222;
+            font-size: 10.5px;
+        }
+        .byk-table th, .byk-table td {
+            border: 1px solid #888;
+            padding: 3px 4px;
+            text-align: center;
+        }
+        .byk-table thead tr:first-child th {
+            border-bottom: 1px solid #888;
+            font-weight: 600;
+            color: #666;
+            background: #fbfbfb;
+        }
+        .th-sensors {
+            width: 18%;
+            font-size: 13px;
+            font-weight: 700 !important;
+            color: #777 !important;
+            vertical-align: middle;
+        }
+        .sub-row th {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: #222;
+            background: #fdfdfd;
+        }
+        .target-sub-row td {
+            font-size: 9.5px;
+            color: #333;
+            background: #fdfdfd;
+            border-bottom: 1.5px solid #444;
+        }
+        .sensor-cell {
+            text-align: left !important;
+            padding-left: 8px !important;
+        }
+        .ch-badge {
+            display: inline-block;
+            width: 20px;
+            font-size: 11px;
+        }
+        .ch-name {
+            font-size: 10px;
+            font-weight: 600;
+            color: #111;
+        }
+
+        /* Bottom Footer */
+        .byk-footer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #333;
+            border-top: 1px solid #bbb;
+            padding-top: 5px;
+        }
+
+        /* Additional Data Addendum (Stellantis Virtual EMT AI Validation) */
+        .addendum-container {
+            width: 100%;
+            max-width: 1120px;
+            margin-top: 20px;
+            background: #ffffff;
+            border: 1px solid #c5c5c5;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 20px 24px;
+        }
+        .addendum-hdr {
+            border-bottom: 2px solid #003da5;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .addendum-hdr h2 {
+            font-size: 16px;
+            color: #003da5;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .addendum-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .addendum-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #003da5;
+            padding: 10px 12px;
+            border-radius: 4px;
+        }
+        .addendum-card.pass {
+            border-left-color: #00a651;
+        }
+        .addendum-card.fail {
+            border-left-color: #e31837;
+        }
+        .addendum-card span {
+            display: block;
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .addendum-card strong {
+            font-size: 14px;
+            color: #0f172a;
+        }
+        .compliance-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .comp-pill {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid #bae6fd;
+        }
+        .remedy-box {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            color: #92400e;
+            line-height: 1.4;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+            .toolbar {
+                display: none !important;
+            }
+            .report-page {
+                border: none;
+                box-shadow: none;
+                padding: 10mm 12mm;
+                page-break-after: always;
+            }
+            .addendum-container {
+                border: none;
+                box-shadow: none;
+                padding: 10mm 12mm;
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Non-printable Top Control Toolbar -->
+    <div class="toolbar">
+        <div class="toolbar-title">
+            <span>BYK Gardner temp-chart V2.3</span>
+            <span style="opacity: 0.6;">|</span>
+            <span style="font-weight: 400; font-size: 12px;">Stellantis Virtual EMT Digital Certificate</span>
+        </div>
+        <div class="toolbar-actions">
+            <button class="tool-btn primary" onclick="window.print()">
+                🖨️ Print / Save as PDF
+            </button>
+            <button class="tool-btn" onclick="downloadCurrentHTML()">
+                ⬇️ Download Report (.html)
+            </button>
+            <button class="tool-btn" onclick="toggleAddendum()">
+                👁️ Toggle AI Diagnostics
+            </button>
+        </div>
+    </div>
+
+    <!-- Authentic BYK Gardner Temp-Chart Page (Page 1) -->
+    <div class="report-page" id="byk-page">
+        <!-- Top Bar -->
+        <div class="top-header">
+            <div class="byk-logo">BYK Gardner</div>
+            <div class="top-title">ED OVEN AUG 3/08/2026</div>
+            <div class="db-status">
+                <span>emt dummmy data base.mdb</span>
+                <div class="status-pill">
+                    <div class="status-indicator-green"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upper Section: SVG Curve Chart + Right Side Panels -->
+        <div class="upper-section">
+            <div class="chart-col">
+                <svg viewBox="0 0 880 440" style="width: 100%; height: auto; display: block;">
+                    <line x1="55" y1="395.0" x2="860" y2="395.0" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="395.0" x2="55" y2="395.0" stroke="#000" stroke-width="1"/>
+<text x="48" y="398.5" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">30</text>
+<line x1="55" y1="375.5" x2="860" y2="375.5" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="375.5" x2="55" y2="375.5" stroke="#000" stroke-width="1"/>
+<text x="48" y="379.0" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">40</text>
+<line x1="55" y1="356.1" x2="860" y2="356.1" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="356.1" x2="55" y2="356.1" stroke="#000" stroke-width="1"/>
+<text x="48" y="359.6" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">50</text>
+<line x1="55" y1="336.6" x2="860" y2="336.6" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="336.6" x2="55" y2="336.6" stroke="#000" stroke-width="1"/>
+<text x="48" y="340.1" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">60</text>
+<line x1="55" y1="317.1" x2="860" y2="317.1" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="317.1" x2="55" y2="317.1" stroke="#000" stroke-width="1"/>
+<text x="48" y="320.6" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">70</text>
+<line x1="55" y1="297.6" x2="860" y2="297.6" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="297.6" x2="55" y2="297.6" stroke="#000" stroke-width="1"/>
+<text x="48" y="301.1" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">80</text>
+<line x1="55" y1="278.2" x2="860" y2="278.2" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="278.2" x2="55" y2="278.2" stroke="#000" stroke-width="1"/>
+<text x="48" y="281.7" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">90</text>
+<line x1="55" y1="258.7" x2="860" y2="258.7" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="258.7" x2="55" y2="258.7" stroke="#000" stroke-width="1"/>
+<text x="48" y="262.2" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">100</text>
+<line x1="55" y1="239.2" x2="860" y2="239.2" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="239.2" x2="55" y2="239.2" stroke="#000" stroke-width="1"/>
+<text x="48" y="242.7" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">110</text>
+<line x1="55" y1="219.7" x2="860" y2="219.7" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="219.7" x2="55" y2="219.7" stroke="#000" stroke-width="1"/>
+<text x="48" y="223.2" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">120</text>
+<line x1="55" y1="200.3" x2="860" y2="200.3" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="200.3" x2="55" y2="200.3" stroke="#000" stroke-width="1"/>
+<text x="48" y="203.8" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">130</text>
+<line x1="55" y1="180.8" x2="860" y2="180.8" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="180.8" x2="55" y2="180.8" stroke="#000" stroke-width="1"/>
+<text x="48" y="184.3" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">140</text>
+<line x1="55" y1="161.3" x2="860" y2="161.3" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="161.3" x2="55" y2="161.3" stroke="#000" stroke-width="1"/>
+<text x="48" y="164.8" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">150</text>
+<line x1="55" y1="141.8" x2="860" y2="141.8" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="141.8" x2="55" y2="141.8" stroke="#000" stroke-width="1"/>
+<text x="48" y="145.3" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">160</text>
+<line x1="55" y1="122.4" x2="860" y2="122.4" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="122.4" x2="55" y2="122.4" stroke="#000" stroke-width="1"/>
+<text x="48" y="125.9" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">170</text>
+<line x1="55" y1="102.9" x2="860" y2="102.9" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="102.9" x2="55" y2="102.9" stroke="#000" stroke-width="1"/>
+<text x="48" y="106.4" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">180</text>
+<line x1="55" y1="83.4" x2="860" y2="83.4" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="83.4" x2="55" y2="83.4" stroke="#000" stroke-width="1"/>
+<text x="48" y="86.9" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">190</text>
+<line x1="55" y1="63.9" x2="860" y2="63.9" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="63.9" x2="55" y2="63.9" stroke="#000" stroke-width="1"/>
+<text x="48" y="67.4" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">200</text>
+<line x1="55" y1="44.5" x2="860" y2="44.5" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="44.5" x2="55" y2="44.5" stroke="#000" stroke-width="1"/>
+<text x="48" y="48.0" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">210</text>
+<line x1="55" y1="25.0" x2="860" y2="25.0" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="51" y1="25.0" x2="55" y2="25.0" stroke="#000" stroke-width="1"/>
+<text x="48" y="28.5" font-size="9.5" text-anchor="end" fill="#111" font-family="Arial, sans-serif">220</text>
+<line x1="55.0" y1="25" x2="55.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="55.0" y1="395" x2="55.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="55.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">0</text>
+<line x1="93.3" y1="25" x2="93.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="93.3" y1="395" x2="93.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="93.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">2</text>
+<line x1="131.7" y1="25" x2="131.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="131.7" y1="395" x2="131.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="131.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">4</text>
+<line x1="170.0" y1="25" x2="170.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="170.0" y1="395" x2="170.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="170.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">6</text>
+<line x1="208.3" y1="25" x2="208.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="208.3" y1="395" x2="208.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="208.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">8</text>
+<line x1="246.7" y1="25" x2="246.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="246.7" y1="395" x2="246.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="246.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">10</text>
+<line x1="285.0" y1="25" x2="285.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="285.0" y1="395" x2="285.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="285.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">12</text>
+<line x1="323.3" y1="25" x2="323.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="323.3" y1="395" x2="323.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="323.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">14</text>
+<line x1="361.7" y1="25" x2="361.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="361.7" y1="395" x2="361.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="361.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">16</text>
+<line x1="400.0" y1="25" x2="400.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="400.0" y1="395" x2="400.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="400.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">18</text>
+<line x1="438.3" y1="25" x2="438.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="438.3" y1="395" x2="438.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="438.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">20</text>
+<line x1="476.7" y1="25" x2="476.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="476.7" y1="395" x2="476.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="476.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">22</text>
+<line x1="515.0" y1="25" x2="515.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="515.0" y1="395" x2="515.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="515.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">24</text>
+<line x1="553.3" y1="25" x2="553.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="553.3" y1="395" x2="553.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="553.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">26</text>
+<line x1="591.7" y1="25" x2="591.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="591.7" y1="395" x2="591.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="591.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">28</text>
+<line x1="630.0" y1="25" x2="630.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="630.0" y1="395" x2="630.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="630.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">30</text>
+<line x1="668.3" y1="25" x2="668.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="668.3" y1="395" x2="668.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="668.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">32</text>
+<line x1="706.7" y1="25" x2="706.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="706.7" y1="395" x2="706.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="706.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">34</text>
+<line x1="745.0" y1="25" x2="745.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="745.0" y1="395" x2="745.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="745.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">36</text>
+<line x1="783.3" y1="25" x2="783.3" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="783.3" y1="395" x2="783.3" y2="399" stroke="#000" stroke-width="1"/>
+<text x="783.3" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">38</text>
+<line x1="821.7" y1="25" x2="821.7" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="821.7" y1="395" x2="821.7" y2="399" stroke="#000" stroke-width="1"/>
+<text x="821.7" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">40</text>
+<line x1="860.0" y1="25" x2="860.0" y2="395" stroke="#999999" stroke-width="0.75" stroke-dasharray="2,2"/>
+<line x1="860.0" y1="395" x2="860.0" y2="399" stroke="#000" stroke-width="1"/>
+<text x="860.0" y="411" font-size="9.5" text-anchor="middle" fill="#111" font-family="Arial, sans-serif">42</text>
+<rect x="55" y="25" width="805" height="370" fill="none" stroke="#222" stroke-width="1.2"/>
+<text x="45" y="17" font-size="10.5" font-weight="bold" fill="#111" font-family="Arial, sans-serif">°C</text>
+<text transform="rotate(-90)" x="-210.0" y="19" text-anchor="middle" font-size="11" font-weight="bold" fill="#111" font-family="Arial, sans-serif">Temperature</text>
+<text x="457.5" y="427" text-anchor="middle" font-size="11" font-weight="bold" fill="#111" font-family="Arial, sans-serif">Time</text>
+<text x="872" y="411" text-anchor="start" font-size="10.5" font-weight="bold" fill="#111" font-family="Arial, sans-serif">min</text>
+<text x="457.5" y="17" text-anchor="middle" font-size="11" font-weight="bold" fill="#111" font-family="Arial, sans-serif">ED OVEN AUG 3/08/2026 (ASHWINI)</text>
+<polyline points="55.0,386.0 59.8,385.9 64.6,385.8 69.4,385.9 74.2,385.7 79.0,385.4 83.8,385.2 88.5,384.9 93.3,384.5 98.1,384.0 102.9,382.8 107.7,381.6 112.5,380.0 117.3,377.2 122.1,373.8 126.9,368.7 131.7,361.9 136.5,353.1 141.2,342.1 146.0,329.5 150.8,315.7 155.6,301.7 160.4,288.7 165.2,277.3 170.0,267.5 174.8,260.2 179.6,254.4 184.4,250.0 189.2,246.8 194.0,244.5 198.8,243.2 203.5,241.9 208.3,231.8 213.1,231.2 217.9,230.6 222.7,230.5 227.5,227.5 232.3,210.4 237.1,201.0 241.9,193.8 246.7,187.9 251.5,182.8 256.2,178.2 261.0,173.8 265.8,169.8 270.6,165.9 275.4,162.4 280.2,159.2 285.0,155.8 289.8,152.8 294.6,149.9 299.4,147.1 304.2,144.4 309.0,141.6 313.8,139.1 318.5,136.6 323.3,134.3 328.1,131.7 332.9,129.6 337.7,127.0 342.5,124.9 347.3,122.6 352.1,120.5 356.9,118.6 361.7,116.7 366.5,114.4 371.2,112.6 376.0,110.3 380.8,108.8 385.6,106.6 390.4,104.9 395.2,103.1 400.0,101.2 404.8,99.7 409.6,97.7 414.4,95.8 419.2,94.1 424.0,92.5 428.8,90.9 433.5,89.0 438.3,87.4 443.1,85.7 447.9,84.2 452.7,82.7 457.5,81.2 462.3,80.5 467.1,80.7 471.9,81.0 476.7,81.5 481.5,80.7 486.2,80.7 491.0,81.1 495.8,81.4 500.6,81.0 505.4,80.8 510.2,81.0 515.0,81.2 519.8,81.5 524.6,81.3 529.4,81.3 534.2,81.1 539.0,80.7 543.8,80.9 548.5,74.6 553.3,74.8 558.1,74.0 562.9,73.6 567.7,73.8 572.5,71.0 577.3,69.6 582.1,69.5 586.9,69.6 591.7,69.6 596.5,69.7 601.2,70.4 606.0,71.3 610.8,73.1 615.6,75.5 620.4,77.5 625.2,79.8 630.0,80.8 634.8,80.8 639.6,80.9 644.4,81.0 649.2,81.6 654.0,92.9 658.8,105.9 663.5,118.8 668.3,130.9 673.1,142.5 677.9,153.4 682.7,164.0 687.5,174.0 692.3,183.6 697.1,192.6 701.9,201.6 706.7,209.6 711.5,217.3 716.2,225.2 721.0,232.5 725.8,239.5 730.6,245.7 735.4,252.1 740.2,258.2 745.0,263.9 749.8,269.3 754.6,274.5 759.4,279.7 764.2,284.5 769.0,288.9 773.8,293.2 778.5,297.3 783.3,301.4 788.1,305.1 792.9,308.9 797.7,312.2 802.5,315.4 807.3,318.8 812.1,321.5 816.9,324.5" fill="none" stroke="#00acc1" stroke-width="1.6" opacity="0.92" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="55.0,385.7 59.8,385.6 64.6,385.6 69.4,385.0 74.2,384.9 79.0,385.1 83.8,384.0 88.5,383.9 93.3,382.8 98.1,381.3 102.9,379.4 107.7,376.9 112.5,373.1 117.3,367.7 122.1,360.3 126.9,351.4 131.7,340.4 136.5,327.2 141.2,313.3 146.0,299.3 150.8,286.2 155.6,274.5 160.4,265.5 165.2,258.0 170.0,251.9 174.8,247.4 179.6,244.7 184.4,243.0 189.2,241.3 194.0,239.6 198.8,239.6 203.5,239.0 208.3,230.5 213.1,230.1 217.9,227.4 222.7,208.8 227.5,199.8 232.3,193.1 237.1,186.9 241.9,182.3 246.7,176.9 251.5,173.3 256.2,168.8 261.0,164.9 265.8,161.8 270.6,159.0 275.4,155.6 280.2,152.1 285.0,149.3 289.8,146.7 294.6,143.8 299.4,140.9 304.2,138.6 309.0,136.0 313.8,133.5 318.5,131.0 323.3,128.7 328.1,126.1 332.9,124.2 337.7,122.1 342.5,120.0 347.3,117.7 352.1,115.8 356.9,113.9 361.7,111.8 366.5,109.8 371.2,107.8 376.0,105.9 380.8,104.5 385.6,102.1 390.4,100.0 395.2,98.2 400.0,96.9 404.8,94.9 409.6,93.5 414.4,91.8 419.2,89.9 424.0,88.7 428.8,86.7 433.5,84.8 438.3,83.8 443.1,81.8 447.9,80.3 452.7,80.6 457.5,80.9 462.3,80.1 467.1,80.4 471.9,79.8 476.7,80.2 481.5,80.6 486.2,80.0 491.0,80.6 495.8,80.3 500.6,79.7 505.4,80.0 510.2,80.7 515.0,80.8 519.8,80.3 524.6,80.5 529.4,80.0 534.2,80.7 539.0,80.2 543.8,81.1 548.5,81.0 553.3,80.8 558.1,78.1 562.9,74.6 567.7,74.5 572.5,74.3 577.3,74.4 582.1,53.5 586.9,53.3 591.7,53.4 596.5,53.9 601.2,57.7 606.0,60.8 610.8,64.3 615.6,68.7 620.4,72.9 625.2,77.3 630.0,80.4 634.8,80.5 639.6,80.6 644.4,93.0 649.2,104.9 654.0,116.5 658.8,127.7 663.5,138.8 668.3,149.7 673.1,159.2 677.9,168.4 682.7,177.8 687.5,186.5 692.3,195.2 697.1,202.6 701.9,210.9 706.7,217.7 711.5,224.9 716.2,231.7 721.0,237.7 725.8,244.6 730.6,250.5 735.4,256.0 740.2,261.1 745.0,266.3 749.8,271.4 754.6,275.9 759.4,280.9 764.2,284.9 769.0,289.0 773.8,293.6 778.5,297.2 783.3,300.7 788.1,304.1 792.9,308.2 797.7,310.2 802.5,314.0 807.3,316.9 812.1,319.7 816.9,322.7" fill="none" stroke="#1e88e5" stroke-width="1.6" opacity="0.92" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="55.0,385.8 59.8,385.7 64.6,385.5 69.4,385.3 74.2,385.2 79.0,384.7 83.8,384.4 88.5,383.6 93.3,382.7 98.1,381.4 102.9,379.5 107.7,377.0 112.5,373.2 117.3,368.3 122.1,361.4 126.9,352.5 131.7,341.8 136.5,329.4 141.2,315.8 146.0,302.6 150.8,289.9 155.6,278.6 160.4,269.2 165.2,261.8 170.0,255.8 174.8,251.6 179.6,248.8 184.4,246.6 189.2,245.0 194.0,244.0 198.8,243.0 203.5,242.4 208.3,233.2 213.1,233.0 217.9,224.3 222.7,216.4 227.5,203.6 232.3,196.5 237.1,190.4 241.9,185.4 246.7,181.0 251.5,176.6 256.2,172.8 261.0,169.0 265.8,165.6 270.6,162.3 275.4,159.0 280.2,155.9 285.0,153.1 289.8,150.2 294.6,147.5 299.4,144.9 304.2,142.3 309.0,139.9 313.8,137.6 318.5,135.0 323.3,132.8 328.1,130.5 332.9,128.4 337.7,126.2 342.5,124.0 347.3,122.0 352.1,119.9 356.9,117.9 361.7,115.9 366.5,114.0 371.2,112.2 376.0,110.2 380.8,108.4 385.6,106.7 390.4,104.9 395.2,102.9 400.0,101.2 404.8,99.5 409.6,97.9 414.4,96.1 419.2,94.4 424.0,92.8 428.8,91.2 433.5,89.6 438.3,88.0 443.1,86.6 447.9,85.6 452.7,85.0 457.5,84.9 462.3,85.3 467.1,84.8 471.9,84.9 476.7,84.7 481.5,85.0 486.2,85.1 491.0,85.0 495.8,85.0 500.6,85.1 505.4,84.9 510.2,85.0 515.0,84.9 519.8,84.7 524.6,84.9 529.4,85.0 534.2,84.8 539.0,85.0 543.8,84.9 548.5,84.4 553.3,78.6 558.1,77.0 562.9,74.8 567.7,74.6 572.5,73.6 577.3,71.5 582.1,71.4 586.9,71.5 591.7,71.3 596.5,72.2 601.2,73.2 606.0,74.5 610.8,76.0 615.6,78.3 620.4,80.8 625.2,83.0 630.0,85.0 634.8,84.9 639.6,87.8 644.4,95.9 649.2,107.3 654.0,118.1 658.8,128.5 663.5,138.6 668.3,148.3 673.1,157.6 677.9,166.5 682.7,175.0 687.5,183.5 692.3,191.3 697.1,198.7 701.9,206.1 706.7,213.1 711.5,219.8 716.2,226.3 721.0,232.6 725.8,238.4 730.6,244.3 735.4,249.7 740.2,254.8 745.0,260.1 749.8,264.9 754.6,269.5 759.4,274.1 764.2,278.3 769.0,282.6 773.8,286.5 778.5,290.4 783.3,294.2 788.1,297.5 792.9,300.9 797.7,304.2 802.5,307.5 807.3,310.4 812.1,313.2 816.9,316.1" fill="none" stroke="#7b1fa2" stroke-width="1.6" opacity="0.92" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="55.0,385.6 59.8,385.3 64.6,385.2 69.4,384.9 74.2,384.7 79.0,384.4 83.8,384.1 88.5,383.2 93.3,382.4 98.1,380.9 102.9,379.1 107.7,376.9 112.5,372.9 117.3,368.0 122.1,361.6 126.9,352.9 131.7,342.5 136.5,330.3 141.2,317.1 146.0,304.0 150.8,291.5 155.6,280.0 160.4,270.9 165.2,263.3 170.0,257.4 174.8,253.2 179.6,249.9 184.4,247.8 189.2,246.3 194.0,245.1 198.8,244.1 203.5,243.7 208.3,233.9 213.1,233.6 217.9,225.9 222.7,216.7 227.5,205.5 232.3,198.0 237.1,191.9 241.9,186.7 246.7,182.3 251.5,177.9 256.2,174.0 261.0,170.3 265.8,167.0 270.6,163.6 275.4,160.4 280.2,157.5 285.0,154.3 289.8,151.7 294.6,148.8 299.4,146.5 304.2,143.6 309.0,141.2 313.8,138.7 318.5,136.5 323.3,134.2 328.1,131.8 332.9,129.8 337.7,127.6 342.5,125.6 347.3,123.3 352.1,121.3 356.9,119.4 361.7,117.3 366.5,115.6 371.2,113.7 376.0,111.9 380.8,109.9 385.6,108.1 390.4,106.4 395.2,104.5 400.0,102.8 404.8,101.1 409.6,99.4 414.4,97.6 419.2,96.1 424.0,94.2 428.8,92.9 433.5,91.2 438.3,89.4 443.1,88.0 447.9,87.2 452.7,86.5 457.5,86.3 462.3,86.7 467.1,86.7 471.9,86.0 476.7,86.4 481.5,86.4 486.2,86.3 491.0,86.4 495.8,86.3 500.6,86.2 505.4,86.3 510.2,86.4 515.0,86.3 519.8,86.8 524.6,86.9 529.4,86.5 534.2,86.6 539.0,86.3 543.8,86.4 548.5,86.3 553.3,81.1 558.1,79.2 562.9,79.3 567.7,75.4 572.5,75.8 577.3,75.6 582.1,75.6 586.9,75.5 591.7,75.6 596.5,75.4 601.2,75.4 606.0,76.0 610.8,78.2 615.6,80.7 620.4,82.6 625.2,85.1 630.0,86.4 634.8,86.5 639.6,89.6 644.4,97.9 649.2,108.0 654.0,119.0 658.8,129.8 663.5,139.8 668.3,149.6 673.1,158.8 677.9,167.7 682.7,176.4 687.5,184.7 692.3,192.6 697.1,200.3 701.9,207.6 706.7,214.5 711.5,221.3 716.2,227.7 721.0,234.1 725.8,239.8 730.6,245.6 735.4,251.2 740.2,256.4 745.0,261.5 749.8,266.3 754.6,271.1 759.4,275.5 764.2,279.8 769.0,283.8 773.8,287.9 778.5,291.7 783.3,295.5 788.1,298.9 792.9,302.1 797.7,305.5 802.5,308.6 807.3,311.7 812.1,314.4 816.9,317.3" fill="none" stroke="#e53935" stroke-width="1.6" opacity="0.92" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="55.0,386.1 59.8,386.1 64.6,386.1 69.4,386.1 74.2,385.9 79.0,385.3 83.8,385.2 88.5,385.0 93.3,384.7 98.1,384.0 102.9,383.1 107.7,381.5 112.5,379.4 117.3,377.2 122.1,373.3 126.9,368.3 131.7,361.4 136.5,351.8 141.2,340.5 146.0,327.2 150.8,313.1 155.6,299.1 160.4,286.1 165.2,274.9 170.0,265.5 174.8,258.1 179.6,252.7 184.4,248.7 189.2,245.4 194.0,243.6 198.8,241.8 203.5,240.8 208.3,227.1 213.1,226.6 217.9,226.3 222.7,226.0 227.5,220.3 232.3,203.4 237.1,194.2 241.9,187.4 246.7,181.6 251.5,176.5 256.2,171.7 261.0,167.4 265.8,163.4 270.6,159.6 275.4,156.1 280.2,152.7 285.0,149.5 289.8,146.5 294.6,143.5 299.4,140.7 304.2,137.8 309.0,135.2 313.8,132.2 318.5,129.9 323.3,127.4 328.1,125.1 332.9,122.8 337.7,120.1 342.5,117.9 347.3,116.1 352.1,113.7 356.9,111.5 361.7,109.3 366.5,107.2 371.2,105.3 376.0,103.2 380.8,101.4 385.6,99.4 390.4,97.3 395.2,95.5 400.0,93.7 404.8,92.1 409.6,90.2 414.4,88.3 419.2,86.7 424.0,85.0 428.8,83.1 433.5,81.4 438.3,80.1 443.1,77.9 447.9,76.8 452.7,75.0 457.5,73.6 462.3,73.5 467.1,72.9 471.9,72.9 476.7,73.0 481.5,73.3 486.2,73.1 491.0,73.4 495.8,73.6 500.6,73.8 505.4,73.9 510.2,73.9 515.0,73.9 519.8,73.5 524.6,73.3 529.4,73.5 534.2,73.5 539.0,73.9 543.8,73.0 548.5,71.9 553.3,72.1 558.1,65.3 562.9,61.3 567.7,61.4 572.5,62.0 577.3,61.5 582.1,61.0 586.9,61.1 591.7,61.2 596.5,61.3 601.2,61.0 606.0,61.1 610.8,61.8 615.6,64.1 620.4,67.9 625.2,71.4 630.0,73.4 634.8,73.3 639.6,73.3 644.4,73.4 649.2,75.1 654.0,88.4 658.8,101.7 663.5,114.2 668.3,126.2 673.1,137.7 677.9,148.6 682.7,158.9 687.5,169.3 692.3,178.7 697.1,187.8 701.9,196.9 706.7,205.0 711.5,212.8 716.2,220.7 721.0,228.1 725.8,234.9 730.6,241.6 735.4,248.1 740.2,254.0 745.0,260.0 749.8,265.3 754.6,270.7 759.4,275.7 764.2,280.5 769.0,285.1 773.8,289.5 778.5,293.9 783.3,297.9 788.1,301.8 792.9,305.4 797.7,309.2 802.5,312.4 807.3,315.6 812.1,318.5 816.9,321.7" fill="none" stroke="#2e7d32" stroke-width="1.6" opacity="0.92" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="side-col">
+                <!-- Information Box -->
+                <div class="byk-box">
+                    <div class="byk-box-hdr">Information</div>
+                    <div class="byk-box-body">
+                        <div class="info-entry"><span class="info-lbl">Title:</span><span class="info-val">ED EMT 3/08/2026</span></div>
+                        <div class="info-entry"><span class="info-lbl">Operator:</span><span class="info-val">ASHWINI</span></div>
+                        <div class="info-entry"><span class="info-lbl">Product:</span><span class="info-val">CC31</span></div>
+                        <div class="info-entry"><span class="info-lbl">Site:</span><span class="info-val">TRL</span></div>
+                        <div class="info-entry"><span class="info-lbl">SerialNo:</span><span class="info-val">1301043</span></div>
+                        <div class="info-entry"><span class="info-lbl">Started:</span><span class="info-val">03-08-2026 14:56:50</span></div>
+                        <div class="info-entry"><span class="info-lbl">Imported:</span><span class="info-val">03-08-2026 11:01:06</span></div>
+                        <div class="info-entry"><span class="info-lbl">Calibrated:</span><span class="info-val">20-11-2020 11:44:35</span></div>
+                        <div class="info-entry"><span class="info-lbl">Sampling Rate:</span><span class="info-val">00:01.0</span></div>
+                        <div class="info-entry"><span class="info-lbl">Trigger Mode:</span><span class="info-val">Threshold: 120</span></div>
+                        <div class="info-entry"><span class="info-lbl">Duration:</span><span class="info-val">24:00:00</span></div>
+                    </div>
+                </div>
+
+                <!-- Comments Box -->
+                <div class="byk-box">
+                    <div class="byk-box-hdr">Comments</div>
+                    <div class="byk-box-body">
+                        <div class="comments-val">
+                            <strong>180 - 195</strong><br>
+                            <span style="color: #d32f2f; font-weight: 700; margin-top: 4px; display: inline-block;">
+                                [REJECT (NG)]
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lower Section: 5 Oven Process Zones Table -->
+        <div class="table-section">
+            <table class="byk-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="th-sensors">Oven Process Zones</th>
+                        <th colspan="5">Critical Values</th>
+                        <th rowspan="2" style="font-size: 11px; width: 6.5%;">Equiv.<br>Time</th>
+                        <th rowspan="2" style="font-size: 11px; width: 5.5%;">Cure<br>Index</th>
+                        <th colspan="4">Peak Temperatures</th>
+                    </tr>
+                    <tr class="sub-row">
+                        <th>Min<br>0.0 °C</th>
+                        <th>Low<br>150.0 °C</th>
+                        <th>Mid<br>165.0 °C</th>
+                        <th>High<br>185.0 °C</th>
+                        <th>Max<br>0.0 °C</th>
+                        <th colspan="2">Minimum</th>
+                        <th colspan="2">Maximum</th>
+                    </tr>
+                    <tr class="target-sub-row">
+                        <td></td>
+                        <td>41:29.0</td>
+                        <td>20:00.0</td>
+                        <td>15:00.0</td>
+                        <td>15:00.0</td>
+                        <td>41:29.0</td>
+                        <td>15:00.0</td>
+                        <td></td>
+                        <td>Value</td>
+                        <td>Time</td>
+                        <td>Value</td>
+                        <td>Time</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+            <tr style="">
+                <td class="sensor-cell">
+                    <span class="ch-badge" style="color: #00acc1; font-weight: 700;">1</span>
+                    <span class="ch-name" style="font-weight: 600;">Zone 1 (Entry Ramp)</span>
+                    <span style="float: right; font-size: 8.5px; padding: 1.5px 5px; border-radius: 3px; font-weight: 700; color: #00873e; background: #e8f5e9; border: 1px solid #c8e6c9;">PASS</span>
+                </td>
+                <td>41:29.0</td>
+                <td>21:00.0</td>
+                <td>18:00.0</td>
+                <td>12:15.0</td>
+                <td>41:29.0</td>
+                <td>34:21.8</td>
+                <td style="font-weight: 600; ">229</td>
+                <td>34.6 °C</td>
+                <td>00:00.0</td>
+                <td style="font-weight: 600; ">197.1 °C</td>
+                <td>27:30.0</td>
+            </tr>
+            
+            <tr style="background: #fff8f8;">
+                <td class="sensor-cell">
+                    <span class="ch-badge" style="color: #1e88e5; font-weight: 700;">2</span>
+                    <span class="ch-name" style="font-weight: 600;">Zone 2 (Preheat)</span>
+                    <span style="float: right; font-size: 8.5px; padding: 1.5px 5px; border-radius: 3px; font-weight: 700; color: #d32f2f; background: #ffebee; border: 1px solid #ffcdd2;">FAIL</span>
+                </td>
+                <td>41:29.0</td>
+                <td>21:15.0</td>
+                <td>18:00.0</td>
+                <td>12:15.0</td>
+                <td>41:29.0</td>
+                <td>34:27.0</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">230</td>
+                <td>34.8 °C</td>
+                <td>00:00.0</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">205.5 °C</td>
+                <td>27:45.0</td>
+            </tr>
+            
+            <tr style="background: #fff8f8;">
+                <td class="sensor-cell">
+                    <span class="ch-badge" style="color: #7b1fa2; font-weight: 700;">3</span>
+                    <span class="ch-name" style="font-weight: 600;">Zone 3 (Soak In)</span>
+                    <span style="float: right; font-size: 8.5px; padding: 1.5px 5px; border-radius: 3px; font-weight: 700; color: #d32f2f; background: #ffebee; border: 1px solid #ffcdd2;">FAIL</span>
+                </td>
+                <td>41:29.0</td>
+                <td>21:00.0</td>
+                <td>17:30.0</td>
+                <td>11:30.0</td>
+                <td>41:29.0</td>
+                <td>33:06.0</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">221</td>
+                <td>34.7 °C</td>
+                <td>00:00.0</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">196.2 °C</td>
+                <td>28:00.0</td>
+            </tr>
+            
+            <tr style="background: #fff8f8;">
+                <td class="sensor-cell">
+                    <span class="ch-badge" style="color: #e53935; font-weight: 700;">4</span>
+                    <span class="ch-name" style="font-weight: 600;">Zone 4 (Cure Hold)</span>
+                    <span style="float: right; font-size: 8.5px; padding: 1.5px 5px; border-radius: 3px; font-weight: 700; color: #d32f2f; background: #ffebee; border: 1px solid #ffcdd2;">FAIL</span>
+                </td>
+                <td>41:29.0</td>
+                <td>21:00.0</td>
+                <td>17:30.0</td>
+                <td>11:15.0</td>
+                <td>41:29.0</td>
+                <td>32:47.2</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">219</td>
+                <td>34.8 °C</td>
+                <td>00:00.0</td>
+                <td style="font-weight: 600; color: #d32f2f; font-weight: 700;">194.1 °C</td>
+                <td>28:30.0</td>
+            </tr>
+            
+            <tr style="">
+                <td class="sensor-cell">
+                    <span class="ch-badge" style="color: #2e7d32; font-weight: 700;">5</span>
+                    <span class="ch-name" style="font-weight: 600;">Zone 5 (Cooling Exit)</span>
+                    <span style="float: right; font-size: 8.5px; padding: 1.5px 5px; border-radius: 3px; font-weight: 700; color: #00873e; background: #e8f5e9; border: 1px solid #c8e6c9;">PASS</span>
+                </td>
+                <td>41:29.0</td>
+                <td>21:45.0</td>
+                <td>18:30.0</td>
+                <td>13:15.0</td>
+                <td>41:29.0</td>
+                <td>36:12.0</td>
+                <td style="font-weight: 600; ">241</td>
+                <td>34.6 °C</td>
+                <td>00:15.0</td>
+                <td style="font-weight: 600; ">201.5 °C</td>
+                <td>28:30.0</td>
+            </tr>
+            
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="byk-footer">
+            <div>temp-chart V2.3</div>
+            <div>Printed at: 11-09-2026 18:59:04</div>
+            <div>Page 1/1</div>
+        </div>
+    </div>
+
+    <!-- Additional Data Section (Executive AI Validation & Root Cause Analysis) -->
+    <div class="addendum-container" id="ai-addendum">
+        <div class="addendum-hdr">
+            <h2>Stellantis Virtual EMT — Predictive Quality & Physical Audit Addendum</h2>
+            <div class="compliance-pills">
+                <span class="comp-pill">ISO 12944-6 Compliant</span>
+                <span class="comp-pill">VDA 621-415 Qualified</span>
+                <span class="comp-pill">Ford FLTM BI 106-01</span>
+            </div>
+        </div>
+
+        <div class="addendum-grid">
+            <div class="addendum-card fail">
+                <span>Dual-Verification Verdict</span>
+                <strong>REJECTED (NG) (CRITICAL DEFECT)</strong>
+            </div>
+            <div class="addendum-card pass">
+                <span>Cure Quality Index (CQI)</span>
+                <strong>63.5%</strong>
+            </div>
+            <div class="addendum-card">
+                <span>Cross-Body Thermal Spread</span>
+                <strong>25.9 °C (Max 25.0°C)</strong>
+            </div>
+            <div class="addendum-card">
+                <span>AI Confidence Rate</span>
+                <strong>62.0% (NG Verdict)</strong>
+            </div>
+        </div>
+
+        <div class="remedy-box">
+            <strong style="color: #78350f;">Engineering Prescription & Process Disposition:</strong><br>
+            Curing failure confirmed by both AI model and physical thermal envelopes. Route body to repair / rebake buffer.
+        </div>
+    </div>
+
+    <script>
+        function toggleAddendum() {
+            const addendum = document.getElementById('ai-addendum');
+            if (addendum.style.display === 'none') {
+                addendum.style.display = 'block';
+            } else {
+                addendum.style.display = 'none';
+            }
+        }
+
+        function downloadCurrentHTML() {
+            const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `BYK_Gardner_EMT_ED_CC31_TRIAL-ED-CC31-002-NG.html`;
+            a.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "version": "2.0.0",
+  "trained_date": "2026-09-08T17:31:55.811519",
+  "standards": [
+    "ISO 12944",
+    "VDA 621-415",
+    "Ford FLTM BI 106-01"
+  ],
+  "num_trials_trained": 240,
+  "num_trials_tested": 60,
+  "curve_predictor_metrics": {
+    "ED": {
+      "rmse": 9.6,
+      "mae": 6.9,
+      "r2": 0.9682
+    },
+    "SEALER": {
+      "rmse": 13.69,
+      "mae": 9.24,
+      "r2": 0.8824
+    },
+    "TOPCOAT": {
+      "rmse": 12.03,
+      "mae": 8.11,
+      "r2": 0.8744
+    }
+  },
+  "classifier_metrics": {
+    "test_accuracy": 95.0,
+    "test_precision": 92.3,
+    "test_recall": 85.7,
+    "test_f1": 0.8889,
+    "test_roc_auc": 0.9767,
+    "false_negative_rate_pct": 14.3
+  },
+  "ng_decision_threshold": 0.4,
+  "feature_count": 68
+}

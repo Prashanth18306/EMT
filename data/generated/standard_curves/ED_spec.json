@@ -1,0 +1,58 @@
+{
+  "name": "ED Oven (Electrodeposition)",
+  "total_time_s": 2400,
+  "ramp_end_s": 480,
+  "soak_start_s": 1200,
+  "soak_end_s": 1800,
+  "cool_end_s": 2400,
+  "cure_threshold": 165.0,
+  "cure_time_min_ok": 12.0,
+  "cure_index_ok": 22.0,
+  "cure_index_ng": 18.0,
+  "ambient_temp": 35.0,
+  "zone_setpoints_ok": [
+    140,
+    175,
+    190,
+    190,
+    180
+  ],
+  "zone_setpoints_ng_low": [
+    110,
+    145,
+    160,
+    160,
+    150
+  ],
+  "zone_setpoints_ng_high": [
+    160,
+    195,
+    215,
+    215,
+    200
+  ],
+  "conveyor_speed_ok": [
+    3.5,
+    4.5
+  ],
+  "conveyor_speed_ng_fast": [
+    5.0,
+    5.8
+  ],
+  "fan_speed_ok": [
+    75,
+    95
+  ],
+  "fan_speed_ng": [
+    45,
+    62
+  ],
+  "gas_pressure_ok": [
+    17,
+    23
+  ],
+  "gas_pressure_ng": [
+    10,
+    14
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "Sealer Oven",
+  "total_time_s": 1800,
+  "ramp_end_s": 360,
+  "soak_start_s": 900,
+  "soak_end_s": 1440,
+  "cool_end_s": 1800,
+  "cure_threshold": 130.0,
+  "cure_time_min_ok": 12.0,
+  "cure_index_ok": 18.0,
+  "cure_index_ng": 14.0,
+  "ambient_temp": 35.0,
+  "zone_setpoints_ok": [
+    120,
+    150,
+    165,
+    165,
+    150
+  ],
+  "zone_setpoints_ng_low": [
+    95,
+    120,
+    135,
+    135,
+    120
+  ],
+  "zone_setpoints_ng_high": [
+    140,
+    170,
+    185,
+    185,
+    170
+  ],
+  "conveyor_speed_ok": [
+    3.5,
+    5.0
+  ],
+  "conveyor_speed_ng_fast": [
+    5.2,
+    6.0
+  ],
+  "fan_speed_ok": [
+    70,
+    90
+  ],
+  "fan_speed_ng": [
+    40,
+    58
+  ],
+  "gas_pressure_ok": [
+    15,
+    22
+  ],
+  "gas_pressure_ng": [
+    9,
+    13
+  ]
+}

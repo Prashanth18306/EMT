@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellantis Virtual EMT — Paint Oven Predictive Validation System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav" id="top-navbar">
+            <div class="nav-brand">
+                <div class="brand-logo">
+                    <span class="logo-shield">⚡</span>
+                    <div class="logo-text">
+                        <span class="brand-name">STELLANTIS</span>
+                        <span class="brand-sub">VIRTUAL EMT AI ENGINE v4.0</span>
+                    </div>
+                </div>
+                <div class="compliance-badge" id="compliance-badge">
+                    <span class="dot live-pulse"></span>
+                    <span>ISO 12944 • VDA 621-415 • FORD FLTM BI 106-01</span>
+                </div>
+            </div>
+
+            <!-- Preset Scenarios Selector -->
+            <div class="nav-presets">
+                <label for="preset-select" class="preset-label">Test Scenario:</label>
+                <select id="preset-select" class="preset-dropdown">
+                    <option value="" disabled selected>Select Plant Preset Scenario...</option>
+                    <option value="normal_ed">🟢 Scenario 1: Normal Production Run (ED Oven, CC21)</option>
+                    <option value="conveyor_fast">🟠 Scenario 2: Conveyor Overspeed (Topcoat, CC51)</option>
+                    <option value="burner_trip">🔴 Scenario 3: Burner Flameout / Low Gas (ED, CC31)</option>
+                    <option value="fan_degradation">🔴 Scenario 4: Fan Degradation / Airflow Imbalance (Sealer, CC41)</option>
+                    <option value="burner_overshoot">🔴 Scenario 5: High Peak Overcure (Sealer, CC21)</option>
+                </select>
+                <button type="button" id="btn-load-preset" class="btn btn-secondary">Load Preset</button>
+            </div>
+
+            <!-- Top Actions -->
+            <div class="nav-actions">
+                <button id="btn-export-cert" class="btn btn-outline" title="Export Certified BYK Gardner EMT Report">
+                    📄 BYK EMT Report
+                </button>
+                <button id="btn-export-json" class="btn btn-outline" title="Download Raw Telemetry JSON">
+                    💾 Export JSON
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body: Sidebar (Controls) + Workspace (Dashboard) -->
+        <div class="main-container">
+            <!-- Left Sidebar: PLC Operational Controls -->
+            <aside class="control-sidebar" id="control-sidebar">
+                <div class="sidebar-header">
+                    <h2>Oven & Recipe Configuration</h2>
+                    <span class="sidebar-sub">Simulated PLC Process Parameters</span>
+                </div>
+
+                <form id="plc-form" onsubmit="return false;">
+                    <!-- Oven Line & Vehicle Selection -->
+                    <div class="form-group-row">
+                        <div class="form-field">
+                            <label for="oven-type">Oven Process Line</label>
+                            <select id="oven-type" class="form-control">
+                                <option value="ED" selected>ED Oven (Primer 185-205°C)</option>
+                                <option value="SEALER">Sealer Oven (150-170°C)</option>
+                                <option value="TOPCOAT">Topcoat Oven (130-150°C)</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="vehicle-model">Car Body Platform</label>
+                            <select id="vehicle-model" class="form-control">
+                                <option value="CC21" selected>CC21 (Compact SUV)</option>
+                                <option value="CC31">CC31 (Sedan Platform)</option>
+                                <option value="CC41">CC41 (Hatchback)</option>
+                                <option value="CC51">CC51 (EV Crossover)</option>
+                                <option value="CC61">CC61 (Large D-SUV)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Zone Setpoints -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>Zone Temperature Setpoints (°C)</h3>
+                            <span class="badge info">5 Heat Zones</span>
+                        </div>
+                        
+                        <div class="slider-row">
+                            <label for="zone1-sp">Zone 1 (Ramp Entry): <span class="val-badge" id="val-zone1">140.5</span>°C</label>
+                            <input type="range" id="zone1-sp" min="100" max="180" step="0.5" value="140.5" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="zone2-sp">Zone 2 (Preheat): <span class="val-badge" id="val-zone2">175.2</span>°C</label>
+                            <input type="range" id="zone2-sp" min="120" max="210" step="0.5" value="175.2" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="zone3-sp">Zone 3 (Soak In): <span class="val-badge" id="val-zone3">190.1</span>°C</label>
+                            <input type="range" id="zone3-sp" min="130" max="220" step="0.5" value="190.1" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="zone4-sp">Zone 4 (Cure Hold): <span class="val-badge" id="val-zone4">190.8</span>°C</label>
+                            <input type="range" id="zone4-sp" min="130" max="220" step="0.5" value="190.8" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="zone5-sp">Zone 5 (Cool Exit): <span class="val-badge" id="val-zone5">180.3</span>°C</label>
+                            <input type="range" id="zone5-sp" min="120" max="210" step="0.5" value="180.3" class="slider">
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Airflow & Line Speed -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>Conveyor & Airflow Dynamics</h3>
+                            <span class="badge info">PLC Actuators</span>
+                        </div>
+
+                        <div class="slider-row">
+                            <label for="conv-speed">Conveyor Speed: <span class="val-badge" id="val-conv">2.18</span> m/min</label>
+                            <input type="range" id="conv-speed" min="1.5" max="3.5" step="0.02" value="2.18" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="fan-speed">Circulation Fan Speed: <span class="val-badge" id="val-fan">86.4</span> %</label>
+                            <input type="range" id="fan-speed" min="40" max="100" step="0.5" value="86.4" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="gas-press">Gas Supply Pressure: <span class="val-badge" id="val-gas">51.2</span> mbar</label>
+                            <input type="range" id="gas-press" min="20" max="65" step="0.5" value="51.2" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="damper-pos">Fresh Air Damper: <span class="val-badge" id="val-damper">52.0</span> %</label>
+                            <input type="range" id="damper-pos" min="10" max="90" step="1" value="52.0" class="slider">
+                        </div>
+                        <div class="slider-row">
+                            <label for="exhaust-fan">Exhaust Ventilation: <span class="val-badge" id="val-exhaust">78.5</span> %</label>
+                            <input type="range" id="exhaust-fan" min="30" max="100" step="0.5" value="78.5" class="slider">
+                        </div>
+                    </div>
+
+                    <!-- Secondary Switches -->
+                    <div class="switch-row">
+                        <div class="switch-item">
+                            <label for="burner-state" style="margin-bottom: 2px;">Main Gas Burner Status</label>
+                            <span style="font-size: 10.5px; color: var(--text-muted);">Safety interlock & heat source</span>
+                        </div>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="burner-state" checked>
+                            <span class="switch-slider"></span>
+                        </div>
+                    </div>
+
+                    <!-- Primary Action Button -->
+                    <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block">
+                        <span class="btn-icon">⚡</span> RUN VIRTUAL EMT VALIDATION
+                    </button>
+                </form>
+            </aside>
+
+            <!-- Right Workspace: Visual Dashboard -->
+            <main class="dashboard-workspace" id="dashboard-workspace">
+                <!-- Dual-Verification KPI Banner -->
+                <section class="kpi-banner-grid" id="kpi-banner-grid">
+                    <!-- Status Verdict Card -->
+                    <div class="kpi-card verdict-card status-pass" id="kpi-verdict-card">
+                        <div class="verdict-badge-row">
+                            <span class="status-indicator-dot" id="status-indicator-dot"></span>
+                            <span class="verdict-pill" id="verdict-pill">CERTIFIED PASS (OK)</span>
+                        </div>
+                        <div class="verdict-title" id="verdict-title">Automotive Quality Pass</div>
+                        <div class="verdict-subtitle" id="verdict-subtitle">Dual-Verification: AI Model (96.9%) + Physical Rules Compliant</div>
+                    </div>
+
+                    <!-- Cure Quality Index (CQI) -->
+                    <div class="kpi-card cqi-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Cure Quality Index (CQI)</span>
+                            <span class="kpi-tag" id="cqi-tier">GOLD TIER</span>
+                        </div>
+                        <div class="cqi-display">
+                            <div class="cqi-value" id="cqi-value">84.2%</div>
+                            <div class="cqi-bar-track">
+                                <div class="cqi-bar-fill" id="cqi-bar-fill" style="width: 84.2%;"></div>
+                            </div>
+                        </div>
+                        <span class="kpi-caption">Weighted Envelope Tracking & Kinetics Margin</span>
+                    </div>
+
+                    <!-- Thermal Uniformity / Spread -->
+                    <div class="kpi-card spread-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Cross-Zone Thermal Spread</span>
+                            <span class="kpi-tag" id="spread-tag">UNIFORM</span>
+                        </div>
+                        <div class="kpi-big-num" id="kpi-spread-val">7.0 °C</div>
+                        <span class="kpi-caption" id="kpi-spread-limit">Limit: ≤ 22.0 °C (Max allowable 25°C)</span>
+                    </div>
+
+                    <!-- Arrhenius Cure Index -->
+                    <div class="kpi-card ci-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Min Arrhenius Cure Index</span>
+                            <span class="kpi-tag">k = 12.0</span>
+                        </div>
+                        <div class="kpi-big-num" id="kpi-ci-val">99.5</div>
+                        <span class="kpi-caption" id="kpi-ci-caption">Chemical Threshold: ≥ 22.0</span>
+                    </div>
+                </section>
+
+                <!-- Interactive Thermal Profile Canvas & Toggles -->
+                <section class="chart-section card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <h2>Continuous Oven Zone Thermal Profiles (Virtual EMT Curves)</h2>
+                            <p class="chart-subtitle">Predicted Temperature Across the 5 Process Zones (Zone 1 to Zone 5) vs. Golden Reference Standard Curve & Acceptance Envelopes</p>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="btn btn-xs active" id="btn-view-all">All 5 Zones</button>
+                            <button class="btn btn-xs" id="btn-view-core">Cure Zones (Z3-Z4)</button>
+                            <button class="btn btn-xs" id="btn-view-extremity">Ramp & Exit (Z1, Z2, Z5)</button>
+                            <button class="btn btn-xs" id="btn-toggle-envelope">Hide Envelope</button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Wrapper -->
+                    <div class="chart-canvas-container" id="chart-canvas-container">
+                        <canvas id="emt-chart-canvas" width="1000" height="420"></canvas>
+                        <div id="chart-tooltip" class="chart-tooltip"></div>
+                    </div>
+
+                    <!-- Sensor Color Toggles Bar -->
+                    <div class="sensor-chips-bar" id="sensor-chips-bar">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </section>
+
+                <!-- Two-Column Lower Grid: Subsystem Health & Early Warnings -->
+                <section class="diagnostics-grid">
+                    <!-- Left: Subsystem Health Attribution -->
+                    <div class="card subsystem-card">
+                        <div class="card-header-clean">
+                            <h3>Subsystem Health Attribution</h3>
+                            <span class="sub-caption">Root Cause Diagnostic Model</span>
+                        </div>
+                        <div class="subsystem-bars-list" id="subsystem-bars-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="diagnosis-box" id="diagnosis-box">
+                            <div class="diag-header">Recommended Corrective Maintenance:</div>
+                            <div class="diag-text" id="diag-remedy-text">Standard routine maintenance. Continue production.</div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Early Warning Alerts & Operational Violations -->
+                    <div class="card alerts-card">
+                        <div class="card-header-clean">
+                            <h3>Early Warning Alerts & Standards Compliance</h3>
+                            <span class="alerts-count-badge" id="alerts-count-badge">0 Active Alerts</span>
+                        </div>
+                        <div class="alerts-scroll-box" id="alerts-scroll-box">
+                            <div class="empty-alerts">
+                                <span class="check-icon">✓</span>
+                                <p>All thermal, kinetic, and actuator parameters are currently operating within nominal quality bounds.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5-Zone Process Quality Audit Table -->
+                <section class="audit-table-section card">
+                    <div class="card-header-clean">
+                        <div class="audit-title-wrap">
+                            <h3>5-ZONE OVEN THERMAL COMPLIANCE AUDIT</h3>
+                            <span class="sub-caption">Zone-Wise Curing Kinetics & Thermal Envelope Tracking Conforming to ISO 12944 & VDA 621-415</span>
+                        </div>
+                        <div class="audit-stat-chips">
+                            <span class="stat-chip" id="chip-pass-ratio">Pass Ratio: 5 / 5 Zones</span>
+                            <span class="stat-chip" id="chip-peak-range">Peak: 191.8°C – 197.5°C</span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="audit-table" id="sensor-audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Oven Process Zone</th>
+                                    <th>Process Stage</th>
+                                    <th>Peak Temp (°C)</th>
+                                    <th>Peak Time (mm:ss)</th>
+                                    <th>Cure Index (CI)</th>
+                                    <th>Time &gt; Threshold</th>
+                                    <th>Equiv Cure Time</th>
+                                    <th>Max Env Dev (°C)</th>
+                                    <th>Compliance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/chart_renderer.js?v=4.0.2"></script>
+    <script src="/static/js/dashboard.js?v=4.0.2"></script>
+</body>
+</html>
