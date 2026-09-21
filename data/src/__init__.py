@@ -1,10 +1,9 @@
 """
-Stellantis Virtual EMT — Predictive Paint Oven Validation System
-Phase 2 & Phase 3 Core Package
+Stellantis Virtual EMT — Thermodynamic Paint Oven Validation System
+Pure First-Principles & Standards-Based Package (ISO 12944 / VDA 621-415 / BYK Gardner)
 """
-from src.config import SENSORS, SENSOR_COLS, OVEN_SPECS, PLC_FEATURE_COLS
-from src.curve_model import VirtualEMTCurvePredictor
-from src.classifier_model import VirtualEMTClassifier
+from src.config import SENSORS, SENSOR_COLS, OVEN_SPECS, VEHICLE_MODELS
+from src.physics_engine import ThermodynamicPhysicsEngine
 from src.root_cause import RootCauseEngine
 from src.pipeline import VirtualEMTSystem
 from src.standard_curve_library import StandardCurveLibrary

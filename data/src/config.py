@@ -6,12 +6,8 @@ Aligned with ISO 12944, VDA 621-415, and Ford FLTM BI 106-01 standards.
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "generated")
-MODELS_DIR = os.path.join(BASE_DIR, "models")
-REPORT_DIR = os.path.join(BASE_DIR, "phase2_model_report")
+DATA_DIR = BASE_DIR
 
-os.makedirs(MODELS_DIR, exist_ok=True)
-os.makedirs(REPORT_DIR, exist_ok=True)
 
 # 12 Temperature Sensors across Oven Zones 1 to 5 (Virtual EMT Layout)
 SENSORS = [

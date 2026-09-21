@@ -69,27 +69,27 @@ class RootCauseEngine:
             subsystems["Burner & Gas Train"] += 20.0
 
         # 4. Check PLC Operational Signals
-        gas_p = plc_dict.get("plc_gas_pressure_mbar", 50.0)
+        gas_p = float(plc_dict.get("plc_gas_pressure_mbar") or 50.0)
         if gas_p < 40.0:
             warnings.append(f"Gas line pressure low: {gas_p:.1f} mbar (normal range 45-55 mbar)")
             subsystems["Burner & Gas Train"] += 30.0
 
-        conv_speed = plc_dict.get("plc_conveyor_speed_m_min", 2.2)
+        conv_speed = float(plc_dict.get("plc_conveyor_speed_m_min") or 2.2)
         if conv_speed > 2.5:
             warnings.append(f"Conveyor overspeed: {conv_speed:.2f} m/min reduces oven soak time")
             subsystems["Conveyor & Drive System"] += 40.0
 
-        fan_speed = plc_dict.get("plc_fan_speed_pct", 85.0)
+        fan_speed = float(plc_dict.get("plc_fan_speed_pct") or 85.0)
         if fan_speed < 70.0:
             warnings.append(f"Circulation fan speed low: {fan_speed:.1f}% reduces convective heat transfer")
             subsystems["Circulation Fans & Nozzles"] += 35.0
 
-        damper_pos = plc_dict.get("plc_damper_pos_pct", 50.0)
+        damper_pos = float(plc_dict.get("plc_damper_pos_pct") or 50.0)
         if damper_pos < 30.0:
             warnings.append(f"Fresh air damper restricted: {damper_pos:.1f}% position may impede ventilation")
             subsystems["Intake Damper & Filters"] += 25.0
 
-        burner_state = plc_dict.get("plc_burner_state", 1)
+        burner_state = int(plc_dict.get("plc_burner_state") if plc_dict.get("plc_burner_state") is not None else 1)
         if burner_state == 0:
             warnings.append("Burner flame status: OFF / tripped during cycle")
             subsystems["Burner & Gas Train"] += 50.0

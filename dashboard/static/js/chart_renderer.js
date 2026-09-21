@@ -1,7 +1,8 @@
 /**
  * Stellantis Virtual EMT — Canvas Thermal Profile Chart Renderer
- * High-performance multi-curve plotting with tolerance envelopes,
- * crosshair tracking, and interactive sensor highlighting.
+ * High-performance multi-curve plotting with dynamic automatically detected zones,
+ * standard goal benchmark curve, tolerance envelopes, and interactive crosshair tracking.
+ * Time axis calibrated strictly for 00:00 to 40:00 (0 to 2400 seconds).
  */
 
 class EMTChartRenderer {
@@ -11,22 +12,57 @@ class EMTChartRenderer {
         this.tooltip = document.getElementById(tooltipId);
 
         this.data = null;
-        this.standardData = null;
+        this.goalData = null;
+        this.zones = null;
         this.activeSensors = new Set();
-        this.showEnvelope = true;
+        this.comparisonSensor = null; // null = all 12 sensors (default), 'temperature_X' = individual comparison
+        this.showEnvelope = false; // Default false: clean curves without tolerance gap band
         this.cureThreshold = 165.0;
 
-        // Palette for the 5 Oven Process Zones
+        // Distinct colors for the 12 EMT sensors
         this.sensorColors = {
-            "Zone 1 (Entry Ramp)":   "#00E5FF", // Cyan (Z1 Entry)
-            "Zone 2 (Preheat)":      "#2979FF", // Royal Blue (Z2 Preheat)
-            "Zone 3 (Soak In)":      "#E040FB", // Magenta (Z3 Soak)
-            "Zone 4 (Cure Hold)":    "#FF1744", // Coral Red (Z4 Cure)
-            "Zone 5 (Cooling Exit)": "#00E676", // Mint Green (Z5 Exit)
+            "temperature_1":  "#00E5FF", // Cyan (A-Pillar / Hood)
+            "temperature_2":  "#00B0FF", // Sky Blue (LH Fender)
+            "temperature_3":  "#2979FF", // Royal Blue (Front Door)
+            "temperature_4":  "#651FFF", // Deep Indigo (Rear Door)
+            "temperature_5":  "#E040FB", // Vibrant Magenta (Quarter Panel)
+            "temperature_6":  "#FF4081", // Rose Pink (Tailgate Lower)
+            "temperature_7":  "#FF5252", // Bright Coral (Rocker Panel)
+            "temperature_8":  "#FF9100", // Amber (Rocker Right)
+            "temperature_9":  "#FFD600", // Warm Gold (Underbody Tunnel)
+            "temperature_10": "#AEEA00", // Lime (Wheel Arch)
+            "temperature_11": "#00E676", // Mint Green (Engine Bay)
+            "temperature_12": "#1DE9B6", // Aqua Teal (Spare Wheel Well)
         };
 
+        this.sensorLabels = {
+            "temperature_1":  "Sensor S1 (Zone 3 Upper Roof)",
+            "temperature_2":  "Sensor S2 (Zone 2 LH Wall)",
+            "temperature_3":  "Sensor S3 (Zone 3 Mid Wall)",
+            "temperature_4":  "Sensor S4 (Zone 3 Lower Air)",
+            "temperature_5":  "Sensor S5 (Zone 1 Upper Air)",
+            "temperature_6":  "Sensor S6 (Zone 1 Lower Air)",
+            "temperature_7":  "Sensor S7 (Zone 5 Lower Air)",
+            "temperature_8":  "Sensor S8 (Zone 5 Upper Exit)",
+            "temperature_9":  "Sensor S9 (Zone 4 Lower Air)",
+            "temperature_10": "Sensor S10 (Zone 4 Mid Wall)",
+            "temperature_11": "Sensor S11 (Zone 2 RH Wall)",
+            "temperature_12": "Sensor S12 (Zone 4 Upper Roof)",
+        };
+
+        // Zone Stage Colors for Background Shading
+        this.zoneShadeColors = [
+            "rgba(0, 229, 255, 0.05)", // Z1: Entry Ramp (Cyan)
+            "rgba(41, 121, 255, 0.05)", // Z2: Preheat (Blue)
+            "rgba(224, 64, 251, 0.06)", // Z3: Soak In (Magenta)
+            "rgba(255, 23, 68, 0.07)",  // Z4: Cure Hold (Red)
+            "rgba(0, 230, 118, 0.05)", // Z5: Cooling Exit (Green)
+        ];
+
+        this.zoneBadgeColors = ["#00E5FF", "#2979FF", "#E040FB", "#FF1744", "#00E676"];
+
         // Layout paddings
-        this.padding = { top: 30, right: 30, bottom: 45, left: 60 };
+        this.padding = { top: 38, right: 35, bottom: 45, left: 60 };
 
         this.initCanvasResolution();
         this.bindEvents();
@@ -47,7 +83,6 @@ class EMTChartRenderer {
         this.canvas.width = Math.floor(w * dpr);
         this.canvas.height = Math.floor(h * dpr);
         
-        // Reset transform to identity then scale by devicePixelRatio
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.scale(dpr, dpr);
         
@@ -65,47 +100,46 @@ class EMTChartRenderer {
         this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
     }
 
-    setData(timeSeriesData, standardCurveData, cureThreshold) {
-        this.data = timeSeriesData;
-        this.standardData = standardCurveData;
-        this.cureThreshold = cureThreshold || 165.0;
+    setCSVData(chartSeries, detectedZones, cureThreshold = 165.0) {
+        this.data = chartSeries;
+        this.zones = detectedZones;
+        this.cureThreshold = cureThreshold;
 
-        // Activate all zones by default
-        if (this.activeSensors.size === 0) {
-            Object.keys(this.sensorColors).forEach(s => this.activeSensors.add(s));
+        // Activate all 12 sensors by default ("default all of")
+        this.activeSensors.clear();
+        for (let i = 1; i <= 12; i++) {
+            this.activeSensors.add(`temperature_${i}`);
         }
 
         this.initCanvasResolution();
         this.render();
     }
 
-    toggleSensor(sensorName) {
-        if (this.activeSensors.has(sensorName)) {
-            this.activeSensors.delete(sensorName);
+    setComparisonSensor(sensorKey) {
+        if (!sensorKey || sensorKey === 'all') {
+            this.comparisonSensor = null;
+        } else if (this.comparisonSensor === sensorKey) {
+            this.comparisonSensor = null; // click again to return to default all sensors
         } else {
-            this.activeSensors.add(sensorName);
+            this.comparisonSensor = sensorKey;
         }
         this.render();
     }
 
-    setFilter(type) {
-        const cureZones = [
-            "Zone 3 (Soak In)",
-            "Zone 4 (Cure Hold)"
-        ];
-        const transitionZones = [
-            "Zone 1 (Entry Ramp)",
-            "Zone 2 (Preheat)",
-            "Zone 5 (Cooling Exit)"
-        ];
+    toggleSensor(sensorKey) {
+        // Buttons do NOT hide data: clicking a sensor toggles individual comparison with matching standard goal
+        this.setComparisonSensor(sensorKey);
+    }
 
+    setFilter(type) {
+        this.comparisonSensor = null; // reset comparison
         this.activeSensors.clear();
         if (type === 'all') {
-            Object.keys(this.sensorColors).forEach(s => this.activeSensors.add(s));
+            for (let i = 1; i <= 12; i++) this.activeSensors.add(`temperature_${i}`);
         } else if (type === 'core') {
-            cureZones.forEach(s => this.activeSensors.add(s));
+            ["temperature_1", "temperature_3", "temperature_4", "temperature_9", "temperature_10", "temperature_12"].forEach(s => this.activeSensors.add(s));
         } else if (type === 'extremity') {
-            transitionZones.forEach(s => this.activeSensors.add(s));
+            ["temperature_2", "temperature_5", "temperature_6", "temperature_7", "temperature_8", "temperature_11"].forEach(s => this.activeSensors.add(s));
         }
         this.render();
     }
@@ -124,16 +158,54 @@ class EMTChartRenderer {
         ctx.clearRect(0, 0, w, h);
 
         const timeArr = this.data.time_s;
-        const maxTime = timeArr[timeArr.length - 1] || 2400;
-        const maxTemp = 230; // Max plot °C
-        const minTemp = 20;  // Ambient start
+        const maxTime = 2400.0; // 00:00 to 40:00 minutes
+        const maxTemp = 230.0;  // Max plot °C
+        const minTemp = 20.0;   // Ambient start
 
         // Coordinate transforms
-        const getX = (t) => p.left + (t / maxTime) * (w - p.left - p.right);
+        const getX = (t) => p.left + (Math.min(t, maxTime) / maxTime) * (w - p.left - p.right);
         const getY = (temp) => (h - p.bottom) - ((temp - minTemp) / (maxTemp - minTemp)) * (h - p.top - p.bottom);
 
-        // 1. Draw Background Grid & Axis Labels
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+        // 1. Draw Dynamically Detected Zone Shading & Boundary Markers
+        if (this.zones && this.zones.zones) {
+            const zList = this.zones.zones;
+            for (let i = 0; i < zList.length; i++) {
+                const z = zList[i];
+                const x1 = getX(z.start_s);
+                const x2 = getX(z.end_s);
+                const shadeColor = this.zoneShadeColors[i % this.zoneShadeColors.length];
+
+                // Zone background tint
+                ctx.fillStyle = shadeColor;
+                ctx.fillRect(x1, p.top, x2 - x1, h - p.top - p.bottom);
+
+                // Zone vertical boundary line (except at start 0)
+                if (i > 0) {
+                    ctx.strokeStyle = "rgba(0, 210, 255, 0.4)";
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, p.top);
+                    ctx.lineTo(x1, h - p.bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Zone Badge at top
+                const badgeColor = this.zoneBadgeColors[i % this.zoneBadgeColors.length];
+                const badgeCenterX = (x1 + x2) / 2;
+                ctx.font = "bold 9.5px 'JetBrains Mono', monospace";
+                ctx.textAlign = "center";
+                ctx.fillStyle = badgeColor;
+                ctx.fillText(`Z${i+1}: ${z.stage.toUpperCase()}`, badgeCenterX, p.top - 18);
+                ctx.font = "9px 'JetBrains Mono', monospace";
+                ctx.fillStyle = "#8E9DBE";
+                ctx.fillText(`${z.start_mmss}–${z.end_mmss}`, badgeCenterX, p.top - 6);
+            }
+        }
+
+        // 2. Draw Background Grid & Axis Labels
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
         ctx.lineWidth = 1;
         ctx.font = "10.5px 'JetBrains Mono', monospace";
         ctx.fillStyle = "#8E9DBE";
@@ -150,12 +222,9 @@ class EMTChartRenderer {
             ctx.fillText(`${temp}°C`, p.left - 10, y + 4);
         }
 
-        // Vertical Grid (Minutes)
-        const totalMin = Math.ceil(maxTime / 60);
-        const minStep = totalMin > 35 ? 5 : 5;
-        for (let m = 0; m <= totalMin; m += minStep) {
+        // Vertical Grid (00:00 to 40:00 minutes)
+        for (let m = 0; m <= 40; m += 5) {
             const t = m * 60;
-            if (t > maxTime) break;
             const x = getX(t);
             ctx.beginPath();
             ctx.moveTo(x, p.top);
@@ -170,7 +239,7 @@ class EMTChartRenderer {
         ctx.font = "10px 'Outfit', sans-serif";
         ctx.fillStyle = "#6576A0";
         ctx.textAlign = "center";
-        ctx.fillText("TIME ELAPSED (MINUTES)", w / 2, h - 8);
+        ctx.fillText("TIME ELAPSED (00:00 TO 40:00 MINUTES)", w / 2, h - 8);
 
         ctx.save();
         ctx.translate(14, h / 2);
@@ -178,7 +247,7 @@ class EMTChartRenderer {
         ctx.fillText("EFFECTIVE METAL TEMPERATURE (°C)", 0, 0);
         ctx.restore();
 
-        // 2. Draw Cure Activation Threshold Line
+        // 3. Draw Cure Activation Threshold Line (165.0°C)
         const yCure = getY(this.cureThreshold);
         ctx.strokeStyle = "rgba(255, 215, 0, 0.75)";
         ctx.lineWidth = 1.5;
@@ -191,73 +260,162 @@ class EMTChartRenderer {
 
         ctx.fillStyle = "#FFD700";
         ctx.textAlign = "right";
+        ctx.font = "bold 10px 'JetBrains Mono', monospace";
         ctx.fillText(`CURE THRESHOLD: ${this.cureThreshold}°C`, w - p.right - 10, yCure - 6);
 
-        // 3. Draw Golden Standard Curve & Tolerance Acceptance Envelopes
-        if (this.standardData && this.showEnvelope) {
-            const stdTimes = this.standardData.time_s;
-            const stdTemps = this.standardData.standard_temp_C;
-            const upper = this.standardData.upper_limit_C;
-            const lower = this.standardData.lower_limit_C;
+        // 4. Draw Standard Goal Tolerance Guard Bands (+/- 8°C)
+        if (this.showEnvelope && this.data.upper_envelope && this.data.lower_envelope) {
+            const upper = this.data.upper_envelope;
+            const lower = this.data.lower_envelope;
 
-            // Shaded Acceptance Envelope
-            ctx.fillStyle = "rgba(0, 144, 255, 0.08)";
+            ctx.fillStyle = "rgba(0, 210, 255, 0.07)";
             ctx.beginPath();
-            ctx.moveTo(getX(stdTimes[0]), getY(upper[0]));
-            for (let i = 1; i < stdTimes.length; i++) {
-                ctx.lineTo(getX(stdTimes[i]), getY(upper[i]));
+            ctx.moveTo(getX(timeArr[0]), getY(upper[0]));
+            for (let i = 1; i < timeArr.length; i++) {
+                ctx.lineTo(getX(timeArr[i]), getY(upper[i]));
             }
-            for (let i = stdTimes.length - 1; i >= 0; i--) {
-                ctx.lineTo(getX(stdTimes[i]), getY(lower[i]));
+            for (let i = timeArr.length - 1; i >= 0; i--) {
+                ctx.lineTo(getX(timeArr[i]), getY(lower[i]));
             }
             ctx.closePath();
             ctx.fill();
 
-            // Upper & Lower Bounds
+            // Upper & Lower dashed envelope strokes
             ctx.strokeStyle = "rgba(0, 210, 255, 0.35)";
             ctx.lineWidth = 1;
             ctx.setLineDash([3, 4]);
 
-            // Upper bound
             ctx.beginPath();
-            ctx.moveTo(getX(stdTimes[0]), getY(upper[0]));
-            for (let i = 1; i < stdTimes.length; i++) ctx.lineTo(getX(stdTimes[i]), getY(upper[i]));
+            ctx.moveTo(getX(timeArr[0]), getY(upper[0]));
+            for (let i = 1; i < timeArr.length; i++) ctx.lineTo(getX(timeArr[i]), getY(upper[i]));
             ctx.stroke();
 
-            // Lower bound
             ctx.beginPath();
-            ctx.moveTo(getX(stdTimes[0]), getY(lower[0]));
-            for (let i = 1; i < stdTimes.length; i++) ctx.lineTo(getX(stdTimes[i]), getY(lower[i]));
-            ctx.stroke();
-
-            // Golden Reference Curve
-            ctx.strokeStyle = "#FFFFFF";
-            ctx.lineWidth = 2;
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(getX(stdTimes[0]), getY(stdTemps[0]));
-            for (let i = 1; i < stdTimes.length; i++) ctx.lineTo(getX(stdTimes[i]), getY(stdTemps[i]));
+            ctx.moveTo(getX(timeArr[0]), getY(lower[0]));
+            for (let i = 1; i < timeArr.length; i++) ctx.lineTo(getX(timeArr[i]), getY(lower[i]));
             ctx.stroke();
             ctx.setLineDash([]);
         }
 
-        // 4. Draw Individual Sensor Curves
-        for (const [sensorName, color] of Object.entries(this.sensorColors)) {
-            if (!this.activeSensors.has(sensorName)) continue;
-
-            const pts = this.data[sensorName];
-            if (!pts || pts.length === 0) continue;
-
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2.0;
-            ctx.lineJoin = "round";
+        // 5. Draw Standard Goal Benchmark Curve
+        if (this.data.goal_mean && (!this.comparisonSensor || this.comparisonSensor === null)) {
+            const g = this.data.goal_mean;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2.2;
+            ctx.setLineDash([6, 4]);
             ctx.beginPath();
-            ctx.moveTo(getX(timeArr[0]), getY(pts[0]));
-
+            ctx.moveTo(getX(timeArr[0]), getY(g[0]));
             for (let i = 1; i < timeArr.length; i++) {
-                ctx.lineTo(getX(timeArr[i]), getY(pts[i]));
+                ctx.lineTo(getX(timeArr[i]), getY(g[i]));
             }
             ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // 6. Draw Sensors: Individual Comparison Mode vs Default All Sensors Mode
+        const isComparisonMode = Boolean(this.comparisonSensor);
+
+        if (isComparisonMode) {
+            const targetKey = this.comparisonSensor;
+            const targetIdx = targetKey.replace('temperature_', '');
+
+            // 6A. Draw other sensors in delicate background traces (NO DATA IS HIDDEN)
+            ctx.lineWidth = 1.0;
+            ctx.globalAlpha = 0.18;
+            for (let idx = 1; idx <= 12; idx++) {
+                const sKey = `temperature_${idx}`;
+                if (sKey === targetKey) continue;
+                const pts = this.data[sKey];
+                if (!pts || pts.length === 0) continue;
+
+                ctx.strokeStyle = this.sensorColors[sKey] || "#00E5FF";
+                ctx.beginPath();
+                ctx.moveTo(getX(timeArr[0]), getY(pts[0]));
+                for (let i = 1; i < timeArr.length; i++) ctx.lineTo(getX(timeArr[i]), getY(pts[i]));
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+
+            // 6B. Draw Matching Standard Goal Sensor Curve (Dashed line)
+            const goalPts = this.data['goal_' + targetKey] || this.data.goal_mean;
+            if (goalPts && goalPts.length > 0) {
+                ctx.save();
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 2.6;
+                ctx.setLineDash([6, 4]);
+                ctx.shadowColor = "rgba(255, 255, 255, 0.5)";
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+                ctx.moveTo(getX(timeArr[0]), getY(goalPts[0]));
+                for (let i = 1; i < timeArr.length; i++) ctx.lineTo(getX(timeArr[i]), getY(goalPts[i]));
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 6C. Draw Selected Trial Sensor Curve (Solid prominent line with glow)
+            const trialPts = this.data[targetKey];
+            if (trialPts && trialPts.length > 0) {
+                ctx.save();
+                const color = this.sensorColors[targetKey] || "#00E5FF";
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 3.2;
+                ctx.lineJoin = "round";
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.moveTo(getX(timeArr[0]), getY(trialPts[0]));
+                for (let i = 1; i < timeArr.length; i++) ctx.lineTo(getX(timeArr[i]), getY(trialPts[i]));
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 6D. Draw Comparison HUD Legend Banner
+            ctx.save();
+            const bannerW = 290;
+            const bannerH = 46;
+            const bannerX = w - p.right - bannerW;
+            const bannerY = p.top + 6;
+            ctx.fillStyle = "rgba(10, 16, 38, 0.88)";
+            ctx.strokeStyle = this.sensorColors[targetKey] || "#00D2FF";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.rect(bannerX, bannerY, bannerW, bannerH);
+            ctx.fill();
+            ctx.stroke();
+
+            // Trial label
+            ctx.fillStyle = this.sensorColors[targetKey] || "#00D2FF";
+            ctx.font = "bold 10.5px 'JetBrains Mono', monospace";
+            ctx.textAlign = "left";
+            ctx.fillText(`● Trial Sensor S${targetIdx} (Actual)`, bannerX + 12, bannerY + 19);
+
+            // Goal label
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "bold 10.5px 'JetBrains Mono', monospace";
+            ctx.fillText(`- - Standard Goal S${targetIdx} (Benchmark)`, bannerX + 12, bannerY + 36);
+            ctx.restore();
+
+        } else {
+            // Default Mode: Render all 12 Trial Sensor Curves (Default All Of)
+            for (let idx = 1; idx <= 12; idx++) {
+                const sKey = `temperature_${idx}`;
+                if (!this.activeSensors.has(sKey)) continue;
+
+                const pts = this.data[sKey];
+                if (!pts || pts.length === 0) continue;
+
+                const color = this.sensorColors[sKey] || "#00E5FF";
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.8;
+                ctx.lineJoin = "round";
+                ctx.beginPath();
+                ctx.moveTo(getX(timeArr[0]), getY(pts[0]));
+
+                for (let i = 1; i < timeArr.length; i++) {
+                    ctx.lineTo(getX(timeArr[i]), getY(pts[i]));
+                }
+                ctx.stroke();
+            }
         }
     }
 
@@ -273,7 +431,7 @@ class EMTChartRenderer {
             return;
         }
 
-        const maxTime = this.data.time_s[this.data.time_s.length - 1];
+        const maxTime = 2400.0;
         const frac = (mouseX - p.left) / (this.width - p.left - p.right);
         const curTimeS = Math.round(frac * maxTime);
 
@@ -289,33 +447,85 @@ class EMTChartRenderer {
         }
 
         const timeS = this.data.time_s[bestIdx];
-        const mmss = `${Math.floor(timeS / 60).toString().padStart(2, '0')}:${(timeS % 60).toString().padStart(2, '0')}`;
+        const m = Math.floor(timeS / 60);
+        const s = Math.floor(timeS % 60);
+        const mmss = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
-        // Build Tooltip HTML
-        let html = `<div style="font-weight:700; color:#00D2FF; margin-bottom:4px; font-family:'JetBrains Mono';">TIME: ${mmss} (${timeS}s)</div>`;
-        let count = 0;
-
-        for (const [sName, color] of Object.entries(this.sensorColors)) {
-            if (!this.activeSensors.has(sName)) continue;
-            if (count >= 6) { // limit height
-                html += `<div style="color:#8E9DBE; font-size:10px;">+ more sensors...</div>`;
-                break;
+        // Find which zone this belongs to
+        let curZoneName = "";
+        if (this.zones && this.zones.zones) {
+            for (const z of this.zones.zones) {
+                if (timeS >= z.start_s && timeS <= z.end_s) {
+                    curZoneName = `${z.short_name} (${z.stage})`;
+                    break;
+                }
             }
-            const tempVal = this.data[sName][bestIdx];
-            html += `<div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:2px;">
-                <span style="color:${color}; font-weight:600;">${sName}:</span>
-                <span style="font-family:'JetBrains Mono'; font-weight:700;">${tempVal.toFixed(1)}°C</span>
+        }
+
+        let html = `<div style="font-weight:700; color:#00D2FF; margin-bottom:4px; font-family:'JetBrains Mono';">
+            TIME: ${mmss} (${timeS.toFixed(0)}s) <span style="color:#FFF; font-size:10px;">${curZoneName}</span>
+        </div>`;
+
+        if (this.comparisonSensor) {
+            // Detailed Comparison Tooltip for Selected Sensor vs Matching Standard Goal
+            const sKey = this.comparisonSensor;
+            const idx = sKey.replace('temperature_', '');
+            const color = this.sensorColors[sKey] || "#00E5FF";
+            const trialVal = this.data[sKey] ? this.data[sKey][bestIdx] : 0;
+            const goalVal = this.data['goal_' + sKey] ? this.data['goal_' + sKey][bestIdx] : (this.data.goal_mean ? this.data.goal_mean[bestIdx] : 0);
+            const delta = trialVal - goalVal;
+            const deltaSign = delta >= 0 ? '+' : '';
+
+            html += `
+            <div style="font-size:11px; font-weight:700; color:${color}; margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:3px;">
+                COMPARING SENSOR S${idx} (${this.sensorLabels[sKey] || ''})
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:14px; margin-bottom:3px;">
+                <span style="color:${color}; font-weight:600;">Trial Actual:</span>
+                <span style="font-family:'JetBrains Mono'; font-weight:700; color:${color};">${trialVal.toFixed(1)}°C</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:14px; margin-bottom:3px;">
+                <span style="color:#FFFFFF; font-weight:600;">Goal Benchmark:</span>
+                <span style="font-family:'JetBrains Mono'; font-weight:700; color:#FFFFFF;">${goalVal.toFixed(1)}°C</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:14px; margin-top:3px; border-top:1px solid rgba(255,255,255,0.08); padding-top:3px;">
+                <span style="color:#8E9DBE; font-weight:600;">Deviation (Δ):</span>
+                <span style="font-family:'JetBrains Mono'; font-weight:700; color:${Math.abs(delta) > 8.0 ? '#FF5252' : '#00E676'};">${deltaSign}${delta.toFixed(1)}°C</span>
             </div>`;
-            count++;
+        } else {
+            // Default Mode: Standard multi-sensor hover readout
+            if (this.data.goal_mean) {
+                const gVal = this.data.goal_mean[bestIdx];
+                html += `<div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:2px;">
+                    <span style="color:#FFF; font-weight:600;">Goal Benchmark:</span>
+                    <span style="font-family:'JetBrains Mono'; font-weight:700; color:#FFF;">${gVal ? gVal.toFixed(1) : 0}°C</span>
+                </div>`;
+            }
+
+            let count = 0;
+            for (let idx = 1; idx <= 12; idx++) {
+                const sKey = `temperature_${idx}`;
+                if (!this.activeSensors.has(sKey)) continue;
+                if (count >= 6) {
+                    html += `<div style="color:#8E9DBE; font-size:10px; margin-top:2px;">+ more sensors... (Click any S1–S12 chip to compare)</div>`;
+                    break;
+                }
+                const color = this.sensorColors[sKey];
+                const tempVal = this.data[sKey] ? this.data[sKey][bestIdx] : 0;
+                html += `<div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:2px;">
+                    <span style="color:${color}; font-weight:600;">Sensor S${idx}:</span>
+                    <span style="font-family:'JetBrains Mono'; font-weight:700;">${tempVal.toFixed(1)}°C</span>
+                </div>`;
+                count++;
+            }
         }
 
         this.tooltip.innerHTML = html;
         this.tooltip.style.display = 'block';
 
-        // Position tooltip
         let tipX = e.clientX - rect.left + 15;
         let tipY = e.clientY - rect.top - 20;
-        if (tipX + 180 > this.width) tipX -= 200;
+        if (tipX + 220 > this.width) tipX -= 240;
         this.tooltip.style.left = `${tipX}px`;
         this.tooltip.style.top = `${tipY}px`;
     }

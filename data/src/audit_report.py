@@ -716,13 +716,13 @@ class AuditReportGenerator:
         </div>
         <div class="toolbar-actions">
             <button class="tool-btn primary" onclick="window.print()">
-                🖨️ Print / Save as PDF
+                Print / Save as PDF
             </button>
             <button class="tool-btn" onclick="downloadCurrentHTML()">
-                ⬇️ Download Report (.html)
+                Download Report (.html)
             </button>
             <button class="tool-btn" onclick="toggleAddendum()">
-                👁️ Toggle AI Diagnostics
+                Toggle Diagnostics
             </button>
         </div>
     </div>

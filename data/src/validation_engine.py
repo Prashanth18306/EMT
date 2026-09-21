@@ -195,7 +195,10 @@ class ValidationEngine:
         cqi_pmt = max(15.0 - (peak_center_err * 1.2), 0.0)
         cqi_total = float(round(cqi_env + cqi_ci + cqi_uni + cqi_pmt, 1))
 
-        # 5. Dual-Verification Synthesis
+        # 5. Quality Verification Synthesis
+        if ai_verdict is None:
+            ai_verdict = physics_verdict
+
         if ai_verdict == "OK" and physics_verdict == "OK":
             final_status = "CERTIFIED PASS (OK)"
             quality_tier = "GOLD STANDARD" if cqi_total >= 85 else "STANDARD PASS"
@@ -281,10 +284,10 @@ class ValidationEngine:
 
             # Process parameters correlation (equipment trips, fan degradation, conveyor speed)
             plc = plc_inputs or {}
-            fan_speed = float(plc.get("plc_fan_speed_pct", 85.0))
-            burner_state = int(plc.get("plc_burner_state", 1))
-            gas_pressure = float(plc.get("plc_gas_pressure_mbar", 50.0))
-            conv_speed = float(plc.get("plc_conveyor_speed_m_min", 2.20))
+            fan_speed = float(plc.get("plc_fan_speed_pct") or 85.0)
+            burner_state = int(plc.get("plc_burner_state") if plc.get("plc_burner_state") is not None else 1)
+            gas_pressure = float(plc.get("plc_gas_pressure_mbar") or 50.0)
+            conv_speed = float(plc.get("plc_conveyor_speed_m_min") or 2.20)
 
             fail_reasons_z = []
             if not z_peak_ok:

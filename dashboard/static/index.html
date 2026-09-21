@@ -15,10 +15,10 @@
         <header class="top-nav" id="top-navbar">
             <div class="nav-brand">
                 <div class="brand-logo">
-                    <span class="logo-shield">⚡</span>
+                    <span class="logo-badge">V-EMT</span>
                     <div class="logo-text">
                         <span class="brand-name">STELLANTIS</span>
-                        <span class="brand-sub">VIRTUAL EMT AI ENGINE v4.0</span>
+                        <span class="brand-sub">VIRTUAL EMT PROCESS ENGINE v4.0</span>
                     </div>
                 </div>
                 <div class="compliance-badge" id="compliance-badge">
@@ -29,134 +29,117 @@
 
             <!-- Preset Scenarios Selector -->
             <div class="nav-presets">
-                <label for="preset-select" class="preset-label">Test Scenario:</label>
-                <select id="preset-select" class="preset-dropdown">
-                    <option value="" disabled selected>Select Plant Preset Scenario...</option>
-                    <option value="normal_ed">🟢 Scenario 1: Normal Production Run (ED Oven, CC21)</option>
-                    <option value="conveyor_fast">🟠 Scenario 2: Conveyor Overspeed (Topcoat, CC51)</option>
-                    <option value="burner_trip">🔴 Scenario 3: Burner Flameout / Low Gas (ED, CC31)</option>
-                    <option value="fan_degradation">🔴 Scenario 4: Fan Degradation / Airflow Imbalance (Sealer, CC41)</option>
-                    <option value="burner_overshoot">🔴 Scenario 5: High Peak Overcure (Sealer, CC21)</option>
+                <label for="top-preset-select" class="preset-label">Process Benchmark:</label>
+                <select id="top-preset-select" class="preset-dropdown">
+                    <option value="" disabled selected>Select Benchmark Recipe...</option>
+                    <option value="trial_normal_sample.csv">[PASS] Nominal Curing Cycle (1s Interval - 40 min)</option>
+                    <option value="trial_ed_normal_15s.csv">[PASS] Nominal Curing Cycle (15s Interval - 40 min)</option>
+                    <option value="trial_sparse_1min_sample.csv">[PASS] Nominal Curing Cycle (60s Interval - 40 min)</option>
+                    <option value="trial_burner_trip_sample.csv">[FAIL] Combustion Trip: Zone 2 Burner Flameout</option>
+                    <option value="trial_conveyor_fast_sample.csv">[FAIL] Line Excursion: Conveyor Overspeed 2.85 m/min</option>
+                    <option value="trial_fan_degradation_sample.csv">[FAIL] Thermal Imbalance: Fan Flow Degradation</option>
+                    <option value="trial_burner_overshoot_sample.csv">[FAIL] Film Degradation: Setpoint Overshoot</option>
                 </select>
-                <button type="button" id="btn-load-preset" class="btn btn-secondary">Load Preset</button>
+                <button type="button" id="btn-load-preset" class="btn btn-secondary">Load Benchmark</button>
             </div>
 
             <!-- Top Actions -->
             <div class="nav-actions">
-                <button id="btn-export-cert" class="btn btn-outline" title="Export Certified BYK Gardner EMT Report">
-                    📄 BYK EMT Report
+                <button id="btn-export-cert" class="btn btn-outline" title="Export Certified Process Quality Report">
+                    Export Quality Report
                 </button>
                 <button id="btn-export-json" class="btn btn-outline" title="Download Raw Telemetry JSON">
-                    💾 Export JSON
+                    Export Telemetry JSON
                 </button>
             </div>
         </header>
 
         <!-- Main Body: Sidebar (Controls) + Workspace (Dashboard) -->
         <div class="main-container">
-            <!-- Left Sidebar: PLC Operational Controls -->
+            <!-- Left Sidebar: CSV Telemetry & Goal Benchmarks -->
             <aside class="control-sidebar" id="control-sidebar">
                 <div class="sidebar-header">
-                    <h2>Oven & Recipe Configuration</h2>
-                    <span class="sidebar-sub">Simulated PLC Process Parameters</span>
+                    <h2>CSV Data Ingestion</h2>
+                    <span class="sidebar-sub">Continuous Paint Shop Validation Engine</span>
                 </div>
 
-                <form id="plc-form" onsubmit="return false;">
-                    <!-- Oven Line & Vehicle Selection -->
-                    <div class="form-group-row">
-                        <div class="form-field">
-                            <label for="oven-type">Oven Process Line</label>
-                            <select id="oven-type" class="form-control">
-                                <option value="ED" selected>ED Oven (Primer 185-205°C)</option>
-                                <option value="SEALER">Sealer Oven (150-170°C)</option>
-                                <option value="TOPCOAT">Topcoat Oven (130-150°C)</option>
-                            </select>
+                <form id="csv-form" onsubmit="return false;">
+                    <!-- Quick Load Presets Dropdown -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>Process Benchmarks</h3>
+                            <span class="badge info">Reference</span>
                         </div>
                         <div class="form-field">
-                            <label for="vehicle-model">Car Body Platform</label>
-                            <select id="vehicle-model" class="form-control">
-                                <option value="CC21" selected>CC21 (Compact SUV)</option>
-                                <option value="CC31">CC31 (Sedan Platform)</option>
-                                <option value="CC41">CC41 (Hatchback)</option>
-                                <option value="CC51">CC51 (EV Crossover)</option>
-                                <option value="CC61">CC61 (Large D-SUV)</option>
+                            <select id="preset-select" class="form-control" style="font-size: 11.5px; padding: 8px;">
+                                <option value="trial_normal_sample.csv" selected>[PASS] Nominal Curing Cycle (1s Interval - 40 min)</option>
+                                <option value="trial_ed_normal_15s.csv">[PASS] Nominal Curing Cycle (15s Interval - 40 min)</option>
+                                <option value="trial_sparse_1min_sample.csv">[PASS] Nominal Curing Cycle (60s Interval - 40 min)</option>
+                                <option value="trial_burner_trip_sample.csv">[FAIL] Combustion Trip: Zone 2 Burner Flameout</option>
+                                <option value="trial_conveyor_fast_sample.csv">[FAIL] Line Excursion: Conveyor Overspeed 2.85 m/min</option>
+                                <option value="trial_fan_degradation_sample.csv">[FAIL] Thermal Imbalance: Fan Flow Degradation</option>
+                                <option value="trial_burner_overshoot_sample.csv">[FAIL] Film Degradation: Setpoint Overshoot</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Zone Setpoints -->
+                    <!-- 1. Trial Sensor CSV Ingestion -->
                     <div class="control-card">
                         <div class="card-title-row">
-                            <h3>Zone Temperature Setpoints (°C)</h3>
-                            <span class="badge info">5 Heat Zones</span>
+                            <h3>1. Actual Sensor Telemetry</h3>
+                            <span class="badge warning" id="trial-source-badge">Trial Run</span>
                         </div>
-                        
-                        <div class="slider-row">
-                            <label for="zone1-sp">Zone 1 (Ramp Entry): <span class="val-badge" id="val-zone1">140.5</span>°C</label>
-                            <input type="range" id="zone1-sp" min="100" max="180" step="0.5" value="140.5" class="slider">
+                        <p style="font-size: 10.5px; color: var(--text-secondary); margin-bottom: 5px; line-height: 1.35;">
+                            Supports 1s to 60s sampling (00:00 to 40:00 duration).
+                        </p>
+                        <div class="csv-dropzone" id="dropzone-trial">
+                            <div class="csv-dropzone-text">Upload or Browse Trial CSV</div>
+                            <div class="csv-dropzone-sub">Channels: timestamp, temperature 1-12, SCADA actuators</div>
+                            <input type="file" id="file-trial-csv" accept=".csv" style="display:none;">
                         </div>
-                        <div class="slider-row">
-                            <label for="zone2-sp">Zone 2 (Preheat): <span class="val-badge" id="val-zone2">175.2</span>°C</label>
-                            <input type="range" id="zone2-sp" min="120" max="210" step="0.5" value="175.2" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="zone3-sp">Zone 3 (Soak In): <span class="val-badge" id="val-zone3">190.1</span>°C</label>
-                            <input type="range" id="zone3-sp" min="130" max="220" step="0.5" value="190.1" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="zone4-sp">Zone 4 (Cure Hold): <span class="val-badge" id="val-zone4">190.8</span>°C</label>
-                            <input type="range" id="zone4-sp" min="130" max="220" step="0.5" value="190.8" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="zone5-sp">Zone 5 (Cool Exit): <span class="val-badge" id="val-zone5">180.3</span>°C</label>
-                            <input type="range" id="zone5-sp" min="120" max="210" step="0.5" value="180.3" class="slider">
+                        <div id="pill-trial-csv" class="csv-file-pill">
+                            <span class="csv-file-name" id="trial-file-name">trial_normal_sample.csv</span>
+                            <span class="csv-file-meta" id="trial-file-meta">2401 pts • 1s</span>
                         </div>
                     </div>
 
-                    <!-- Dynamic Airflow & Line Speed -->
+                    <!-- 2. Standard Goal Benchmark CSV -->
                     <div class="control-card">
                         <div class="card-title-row">
-                            <h3>Conveyor & Airflow Dynamics</h3>
-                            <span class="badge info">PLC Actuators</span>
+                            <h3>2. Certified Target Benchmark</h3>
+                            <span class="badge info">Goal Run</span>
                         </div>
-
-                        <div class="slider-row">
-                            <label for="conv-speed">Conveyor Speed: <span class="val-badge" id="val-conv">2.18</span> m/min</label>
-                            <input type="range" id="conv-speed" min="1.5" max="3.5" step="0.02" value="2.18" class="slider">
+                        <div class="csv-dropzone" id="dropzone-goal">
+                            <div class="csv-dropzone-text">Upload or Browse Goal CSV</div>
+                            <div class="csv-dropzone-sub">Default: Certified OEM Benchmark Curve</div>
+                            <input type="file" id="file-goal-csv" accept=".csv" style="display:none;">
                         </div>
-                        <div class="slider-row">
-                            <label for="fan-speed">Circulation Fan Speed: <span class="val-badge" id="val-fan">86.4</span> %</label>
-                            <input type="range" id="fan-speed" min="40" max="100" step="0.5" value="86.4" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="gas-press">Gas Supply Pressure: <span class="val-badge" id="val-gas">51.2</span> mbar</label>
-                            <input type="range" id="gas-press" min="20" max="65" step="0.5" value="51.2" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="damper-pos">Fresh Air Damper: <span class="val-badge" id="val-damper">52.0</span> %</label>
-                            <input type="range" id="damper-pos" min="10" max="90" step="1" value="52.0" class="slider">
-                        </div>
-                        <div class="slider-row">
-                            <label for="exhaust-fan">Exhaust Ventilation: <span class="val-badge" id="val-exhaust">78.5</span> %</label>
-                            <input type="range" id="exhaust-fan" min="30" max="100" step="0.5" value="78.5" class="slider">
+                        <div id="pill-goal-csv" class="csv-file-pill">
+                            <span class="csv-file-name" id="goal-file-name">standard_goal_sample.csv</span>
+                            <span class="csv-file-meta" id="goal-file-meta">2401 pts • 40 min</span>
                         </div>
                     </div>
 
-                    <!-- Secondary Switches -->
-                    <div class="switch-row">
-                        <div class="switch-item">
-                            <label for="burner-state" style="margin-bottom: 2px;">Main Gas Burner Status</label>
-                            <span style="font-size: 10.5px; color: var(--text-muted);">Safety interlock & heat source</span>
+                    <!-- 3. Combined Config CSV -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>3. Oven & Substrate Specs</h3>
+                            <span class="badge info">Config</span>
                         </div>
-                        <div class="toggle-switch">
-                            <input type="checkbox" id="burner-state" checked>
-                            <span class="switch-slider"></span>
+                        <div class="csv-dropzone" id="dropzone-config">
+                            <div class="csv-dropzone-text">Upload or Browse Config CSV</div>
+                            <div class="csv-dropzone-sub">Default: ED Primer Oven with CC21 Body Specs</div>
+                            <input type="file" id="file-config-csv" accept=".csv" style="display:none;">
+                        </div>
+                        <div id="pill-config-csv" class="csv-file-pill">
+                            <span class="csv-file-name" id="config-file-name">oven_vehicle_config_sample.csv</span>
+                            <span class="csv-file-meta" id="config-file-meta">165°C • 40 min</span>
                         </div>
                     </div>
 
                     <!-- Primary Action Button -->
-                    <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block">
-                        <span class="btn-icon">⚡</span> RUN VIRTUAL EMT VALIDATION
+                    <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block" style="padding: 10px; font-size: 12px; margin-top: 4px;">
+                        VALIDATE PROCESS AGAINST BENCHMARK
                     </button>
                 </form>
             </aside>
@@ -169,10 +152,10 @@
                     <div class="kpi-card verdict-card status-pass" id="kpi-verdict-card">
                         <div class="verdict-badge-row">
                             <span class="status-indicator-dot" id="status-indicator-dot"></span>
-                            <span class="verdict-pill" id="verdict-pill">CERTIFIED PASS (OK)</span>
+                            <span class="verdict-pill" id="verdict-pill">GO (OK)</span>
                         </div>
                         <div class="verdict-title" id="verdict-title">Automotive Quality Pass</div>
-                        <div class="verdict-subtitle" id="verdict-subtitle">Dual-Verification: AI Model (96.9%) + Physical Rules Compliant</div>
+                        <div class="verdict-subtitle" id="verdict-subtitle">Trial Curve Validated Against Standard Goal Benchmark</div>
                     </div>
 
                     <!-- Cure Quality Index (CQI) -->
@@ -182,21 +165,21 @@
                             <span class="kpi-tag" id="cqi-tier">GOLD TIER</span>
                         </div>
                         <div class="cqi-display">
-                            <div class="cqi-value" id="cqi-value">84.2%</div>
+                            <div class="cqi-value" id="cqi-value">93.8%</div>
                             <div class="cqi-bar-track">
-                                <div class="cqi-bar-fill" id="cqi-bar-fill" style="width: 84.2%;"></div>
+                                <div class="cqi-bar-fill" id="cqi-bar-fill" style="width: 93.8%;"></div>
                             </div>
                         </div>
-                        <span class="kpi-caption">Weighted Envelope Tracking & Kinetics Margin</span>
+                        <span class="kpi-caption">Envelope Tracking & Kinetics Margin</span>
                     </div>
 
                     <!-- Thermal Uniformity / Spread -->
                     <div class="kpi-card spread-card">
                         <div class="card-kpi-header">
-                            <span class="kpi-title">Cross-Zone Thermal Spread</span>
+                            <span class="kpi-title">Cross-Body Thermal Spread</span>
                             <span class="kpi-tag" id="spread-tag">UNIFORM</span>
                         </div>
-                        <div class="kpi-big-num" id="kpi-spread-val">7.0 °C</div>
+                        <div class="kpi-big-num" id="kpi-spread-val">2.5 °C</div>
                         <span class="kpi-caption" id="kpi-spread-limit">Limit: ≤ 22.0 °C (Max allowable 25°C)</span>
                     </div>
 
@@ -206,7 +189,7 @@
                             <span class="kpi-title">Min Arrhenius Cure Index</span>
                             <span class="kpi-tag">k = 12.0</span>
                         </div>
-                        <div class="kpi-big-num" id="kpi-ci-val">99.5</div>
+                        <div class="kpi-big-num" id="kpi-ci-val">96.9</div>
                         <span class="kpi-caption" id="kpi-ci-caption">Chemical Threshold: ≥ 22.0</span>
                     </div>
                 </section>
@@ -215,14 +198,14 @@
                 <section class="chart-section card">
                     <div class="chart-header">
                         <div class="chart-title-group">
-                            <h2>Continuous Oven Zone Thermal Profiles (Virtual EMT Curves)</h2>
-                            <p class="chart-subtitle">Predicted Temperature Across the 5 Process Zones (Zone 1 to Zone 5) vs. Golden Reference Standard Curve & Acceptance Envelopes</p>
+                            <h2>Continuous Oven Zone Thermal Profiles (00:00 to 40:00)</h2>
+                            <p class="chart-subtitle">12-Sensor Trial Data vs Standard Goal Golden Benchmark & Tolerances with Dynamic Automatic Zone Detection</p>
                         </div>
                         <div class="chart-controls">
-                            <button class="btn btn-xs active" id="btn-view-all">All 5 Zones</button>
+                            <button class="btn btn-xs active" id="btn-view-all">All Sensors</button>
                             <button class="btn btn-xs" id="btn-view-core">Cure Zones (Z3-Z4)</button>
                             <button class="btn btn-xs" id="btn-view-extremity">Ramp & Exit (Z1, Z2, Z5)</button>
-                            <button class="btn btn-xs" id="btn-toggle-envelope">Hide Envelope</button>
+                            <button class="btn btn-xs" id="btn-toggle-envelope">Show Tolerance Envelope</button>
                         </div>
                     </div>
 
@@ -243,15 +226,15 @@
                     <!-- Left: Subsystem Health Attribution -->
                     <div class="card subsystem-card">
                         <div class="card-header-clean">
-                            <h3>Subsystem Health Attribution</h3>
-                            <span class="sub-caption">Root Cause Diagnostic Model</span>
+                            <h3>Operational SCADA Telemetry</h3>
+                            <span class="sub-caption">Trial Actuator Monitoring</span>
                         </div>
                         <div class="subsystem-bars-list" id="subsystem-bars-list">
                             <!-- Populated dynamically -->
                         </div>
                         <div class="diagnosis-box" id="diagnosis-box">
-                            <div class="diag-header">Recommended Corrective Maintenance:</div>
-                            <div class="diag-text" id="diag-remedy-text">Standard routine maintenance. Continue production.</div>
+                            <div class="diag-header">Quality & Process Assessment:</div>
+                            <div class="diag-text" id="diag-remedy-text">All parameters aligned with certified Standard Goal benchmark.</div>
                         </div>
                     </div>
 
@@ -263,7 +246,7 @@
                         </div>
                         <div class="alerts-scroll-box" id="alerts-scroll-box">
                             <div class="empty-alerts">
-                                <span class="check-icon">✓</span>
+                                <span class="status-indicator-tag" style="font-weight:700; color:#00E676; font-size:11px; margin-bottom:6px; display:inline-block;">STATUS: COMPLIANT</span>
                                 <p>All thermal, kinetic, and actuator parameters are currently operating within nominal quality bounds.</p>
                             </div>
                         </div>
@@ -274,31 +257,52 @@
                 <section class="audit-table-section card">
                     <div class="card-header-clean">
                         <div class="audit-title-wrap">
-                            <h3>5-ZONE OVEN THERMAL COMPLIANCE AUDIT</h3>
-                            <span class="sub-caption">Zone-Wise Curing Kinetics & Thermal Envelope Tracking Conforming to ISO 12944 & VDA 621-415</span>
+                            <h3>DYNAMIC AUTOMATIC ZONE DETECTION & GOAL AUDIT</h3>
+                            <span class="sub-caption">Gradient-Segmented Process Zones (Zone 1 to Zone 5) Compared Symmetrically against Standard Goal Benchmark</span>
                         </div>
                         <div class="audit-stat-chips">
-                            <span class="stat-chip" id="chip-pass-ratio">Pass Ratio: 5 / 5 Zones</span>
-                            <span class="stat-chip" id="chip-peak-range">Peak: 191.8°C – 197.5°C</span>
+                            <button class="btn btn-xs active" id="btn-show-zones-table" style="font-size:11px;">Detected Zones</button>
+                            <button class="btn btn-xs" id="btn-show-sensors-table" style="font-size:11px;">12-Sensor Details</button>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="audit-table" id="sensor-audit-table">
+                    <!-- Table 1: Detected Zones -->
+                    <div class="table-responsive" id="table-zones-container">
+                        <table class="audit-table" id="zones-audit-table">
                             <thead>
                                 <tr>
-                                    <th>Oven Process Zone</th>
+                                    <th>Oven Zone</th>
                                     <th>Process Stage</th>
-                                    <th>Peak Temp (°C)</th>
-                                    <th>Peak Time (mm:ss)</th>
-                                    <th>Cure Index (CI)</th>
-                                    <th>Time &gt; Threshold</th>
-                                    <th>Equiv Cure Time</th>
-                                    <th>Max Env Dev (°C)</th>
-                                    <th>Compliance</th>
+                                    <th>Trial Timing (0-40m)</th>
+                                    <th>Goal Benchmark</th>
+                                    <th>Trial Peak</th>
+                                    <th>Goal Peak</th>
+                                    <th>Δ Peak</th>
+                                    <th>Zone Compliance</th>
                                 </tr>
                             </thead>
-                            <tbody id="audit-table-body">
+                            <tbody id="audit-zones-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table 2: 12-Sensor Details -->
+                    <div class="table-responsive" id="table-sensors-container" style="display:none;">
+                        <table class="audit-table" id="sensors-audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Sensor Location</th>
+                                    <th>Channel</th>
+                                    <th>Trial Peak</th>
+                                    <th>Goal Peak</th>
+                                    <th>Δ Peak</th>
+                                    <th>Peak Time</th>
+                                    <th>Cure Index (CI)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-sensors-body">
                                 <!-- Populated dynamically -->
                             </tbody>
                         </table>
@@ -308,8 +312,9 @@
         </div>
     </div>
 
+
     <!-- Scripts -->
-    <script src="/static/js/chart_renderer.js?v=4.0.2"></script>
-    <script src="/static/js/dashboard.js?v=4.0.2"></script>
+    <script src="/static/js/chart_renderer.js?v=4.0.3"></script>
+    <script src="/static/js/dashboard.js?v=4.0.3"></script>
 </body>
 </html>
