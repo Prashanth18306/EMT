@@ -11,16 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // State Variables
     let activeTrialCSV = null;
     let activeGoalCSV = null;
-    let activeConfigCSV = null;
     let currentSampleId = 'trial_normal_sample.csv';
     let lastValidationResult = null;
 
     // UI Element References
     const presetSelect = document.getElementById('preset-select');
-    const btnLoadPreset = document.getElementById('btn-load-preset');
     const btnValidate = document.getElementById('btn-run-simulation');
     const btnExportCert = document.getElementById('btn-export-cert');
-    const btnExportJson = document.getElementById('btn-export-json');
 
     // Dropzones & File Inputs
     const dropzoneTrial = document.getElementById('dropzone-trial');
@@ -33,11 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileGoalInput = document.getElementById('file-goal-csv');
     const goalFileName = document.getElementById('goal-file-name');
     const goalFileMeta = document.getElementById('goal-file-meta');
-
-    const dropzoneConfig = document.getElementById('dropzone-config');
-    const fileConfigInput = document.getElementById('file-config-csv');
-    const configFileName = document.getElementById('config-file-name');
-    const configFileMeta = document.getElementById('config-file-meta');
 
     // KPI Elements
     const verdictCard = document.getElementById('kpi-verdict-card');
@@ -172,15 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         runCSVValidation();
     });
 
-    // Config CSV handler
-    setupDropzone(dropzoneConfig, fileConfigInput, (fileName, content) => {
-        activeConfigCSV = content;
-        configFileName.textContent = fileName;
-        configFileMeta.textContent = `Custom Oven/Vehicle Specs`;
-        showToast(`Loaded Config CSV: ${fileName}`, 'success');
-        runCSVValidation();
-    });
-
     // ── 4. Preset Selection ──────────────────────────────────────────────
     if (presetSelect) {
         presetSelect.addEventListener('change', () => {
@@ -190,16 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
             trialFileMeta.textContent = currentSampleId.includes('1min') ? '41 rows • 60s' : (currentSampleId.includes('15s') ? '161 rows • 15s' : '2401 rows • 1s');
             pillTrial.style.display = "flex";
             runCSVValidation();
-        });
-    }
-
-    if (btnLoadPreset) {
-        btnLoadPreset.addEventListener('click', () => {
-            if (presetSelect) {
-                currentSampleId = presetSelect.value;
-                activeTrialCSV = null;
-                runCSVValidation();
-            }
         });
     }
 
@@ -214,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const payload = {
                 trial_csv: activeTrialCSV,
                 goal_csv: activeGoalCSV,
-                config_csv: activeConfigCSV,
                 sample_id: currentSampleId
             };
 
@@ -249,11 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Update Verdict Card
         verdictCard.className = `kpi-card verdict-card ${isPass ? 'status-pass' : 'status-fail'}`;
         verdictPill.textContent = verdict;
-        verdictPill.style.background = isPass ? "#00E676" : "#FF1744";
+        verdictPill.style.background = isPass ? "#50E3C2" : "#FF1744";
         verdictPill.style.color = isPass ? "#060A1D" : "#FFFFFF";
 
         statusDot.className = `status-indicator-dot ${isPass ? 'live-pulse' : 'fail-pulse'}`;
-        statusDot.style.background = isPass ? "#00E676" : "#FF1744";
+        statusDot.style.background = isPass ? "#50E3C2" : "#FF1744";
 
         verdictTitle.textContent = isPass ? "Automotive Quality Certified (GO)" : "Process Quality Reject (NO-GO)";
         verdictSubtitle.textContent = isPass 
@@ -264,28 +236,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const cqi = result.cqi_score || 0;
         cqiValue.textContent = `${cqi.toFixed(1)}%`;
         cqiBarFill.style.width = `${Math.min(cqi, 100)}%`;
-        cqiBarFill.style.background = isPass ? "linear-gradient(90deg, #00D2FF, #00E676)" : "linear-gradient(90deg, #FFA000, #FF1744)";
+        cqiBarFill.style.background = isPass ? "linear-gradient(90deg, #4A90E2, #50E3C2)" : "linear-gradient(90deg, #F39C12, #E74C3C)";
         cqiTier.textContent = result.quality_tier || (isPass ? "GOLD TIER" : "REJECT");
-        cqiTier.style.color = isPass ? "#00E676" : "#FF1744";
+        cqiTier.style.color = isPass ? "#27AE60" : "#E74C3C";
 
         // 3. Thermal Spread
         const spread = result.stats.thermal_spread_C || 0;
         kpiSpreadVal.textContent = `${spread.toFixed(1)} °C`;
         if (spread <= 15.0) {
             spreadTag.textContent = "UNIFORM";
-            spreadTag.style.color = "#00E676";
+            spreadTag.style.color = "#27AE60";
         } else if (spread <= 22.0) {
             spreadTag.textContent = "MODERATE";
-            spreadTag.style.color = "#FFA000";
+            spreadTag.style.color = "#F39C12";
         } else {
             spreadTag.textContent = "IMBALANCE";
-            spreadTag.style.color = "#FF1744";
+            spreadTag.style.color = "#E74C3C";
         }
 
         // 4. Min Arrhenius Cure Index
         const minCi = result.stats.min_cure_index || 0;
         kpiCiVal.textContent = minCi.toFixed(1);
-        kpiCiVal.style.color = minCi >= 22.0 ? "#00E676" : "#FF1744";
+        kpiCiVal.style.color = minCi >= 22.0 ? "#27AE60" : "#E74C3C";
 
         // 5. Update Canvas Chart
         if (result.chart_series && result.trial_zones) {
@@ -304,13 +276,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const tr = document.createElement('tr');
                 const badgeClass = z.status === 'PASS' ? 'badge-pass' : (z.status === 'WARN' ? 'badge-warn' : 'badge-fail');
                 tr.innerHTML = `
-                    <td style="font-weight:600;"><span class="zone-tag-indicator" style="background:${z.zone_id === 1 ? '#00E5FF' : (z.zone_id === 2 ? '#2979FF' : (z.zone_id === 3 ? '#E040FB' : (z.zone_id === 4 ? '#FF1744' : '#00E676')))}"></span>${z.name}</td>
+                    <td style="font-weight:600;"><span class="zone-tag-indicator" style="background:${z.zone_id === 1 ? '#4A90E2' : (z.zone_id === 2 ? '#26A69A' : (z.zone_id === 3 ? '#8E44AD' : (z.zone_id === 4 ? '#E74C3C' : '#27AE60')))}"></span>${z.name}</td>
                     <td>${z.stage}</td>
-                    <td><code>${z.trial_timing}</code> <span style="font-size:10px; color:#8E9DBE;">(${z.trial_duration})</span></td>
-                    <td><code>${z.goal_timing}</code> <span style="font-size:10px; color:#8E9DBE;">(${z.goal_duration})</span></td>
+                    <td><code>${z.trial_timing}</code> <span style="font-size:10px; color:#888888;">(${z.trial_duration})</span></td>
+                    <td><code>${z.goal_timing}</code> <span style="font-size:10px; color:#888888;">(${z.goal_duration})</span></td>
                     <td>${z.trial_peak_C}°C</td>
                     <td>${z.goal_peak_C}°C</td>
-                    <td style="font-weight:600; color:${Math.abs(z.delta_peak_C) > 8 ? '#FF5252' : '#8E9DBE'};">${z.delta_peak_C > 0 ? '+' : ''}${z.delta_peak_C}°C</td>
+                    <td style="font-weight:600; color:${Math.abs(z.delta_peak_C) > 8 ? '#E74C3C' : '#666666'};">${z.delta_peak_C > 0 ? '+' : ''}${z.delta_peak_C}°C</td>
                     <td><span class="${badgeClass}">${z.status}</span></td>
                 `;
                 auditZonesBody.appendChild(tr);
@@ -325,18 +297,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 tr.style.cursor = "pointer";
                 tr.title = `Click to compare ${s.sensor} with Matching Standard Goal on the chart`;
                 const deltaCol = (s.delta_peak_C !== undefined)
-                    ? (Math.abs(s.delta_peak_C) > 8.0 ? '#FF5252' : (Math.abs(s.delta_peak_C) > 4.0 ? '#FFA000' : '#00E676'))
-                    : '#8E9DBE';
+                    ? (Math.abs(s.delta_peak_C) > 8.0 ? '#E74C3C' : (Math.abs(s.delta_peak_C) > 4.0 ? '#F39C12' : '#27AE60'))
+                    : '#888888';
                 const deltaSign = (s.delta_peak_C > 0) ? '+' : '';
                 const isComparingThis = chart.comparisonSensor === s.channel;
                 tr.innerHTML = `
-                    <td style="font-weight:600;"><span class="chip-color-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${chart.sensorColors[s.channel] || '#00D2FF'}; margin-right:6px;"></span>${s.sensor}</td>
+                    <td style="font-weight:600;"><span class="chip-color-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${chart.sensorColors[s.channel] || '#4A90E2'}; margin-right:6px;"></span>${s.sensor}</td>
                     <td><code>${s.channel}</code></td>
                     <td>${s.peak_temp_C}°C</td>
                     <td>${s.goal_peak_temp_C ? s.goal_peak_temp_C + '°C' : '—'}</td>
                     <td style="font-weight:700; color:${deltaCol};">${s.delta_peak_C !== undefined ? deltaSign + s.delta_peak_C + '°C' : '—'}</td>
                     <td>${s.peak_time_mmss}</td>
-                    <td style="font-weight:700; color:${s.cure_index >= 20 ? '#00E676' : '#FF5252'};">${s.cure_index}</td>
+                    <td style="font-weight:700; color:${s.cure_index >= 20 ? '#27AE60' : '#E74C3C'};">${s.cure_index}</td>
                     <td><button class="btn btn-xs ${isComparingThis ? 'active' : ''}" style="padding:2px 8px; font-size:10px;">${isComparingThis ? 'Comparing' : 'Compare'}</button></td>
                 `;
                 tr.addEventListener('click', () => {
@@ -356,21 +328,21 @@ document.addEventListener('DOMContentLoaded', () => {
             // Generate telemetry rows
             subsystemBarsList.innerHTML = `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; margin-bottom: 12px;">
-                    <div style="background:rgba(12,19,46,0.5); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                        <span style="color:#8E9DBE; font-size:10.5px;">Mean Deviation from Goal:</span>
-                        <div style="font-size:16px; font-weight:700; color:#00D2FF;">${result.stats.mean_deviation_from_goal_C}°C</div>
+                    <div style="background:#F0F2F5; padding:12px; border-radius:8px; border:1px solid #E0E0E0;">
+                        <span style="color:#666666; font-size:11px; font-weight:600;">Mean Deviation from Goal:</span>
+                        <div style="font-size:16px; font-weight:700; color:#4A90E2;">${result.stats.mean_deviation_from_goal_C}°C</div>
                     </div>
-                    <div style="background:rgba(12,19,46,0.5); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                        <span style="color:#8E9DBE; font-size:10.5px;">Sensor Pass Rate:</span>
-                        <div style="font-size:16px; font-weight:700; color:${result.stats.sensor_pass_count >= 10 ? '#00E676' : '#FF5252'};">${result.stats.sensor_pass_count} / 12 Sensors</div>
+                    <div style="background:#F0F2F5; padding:12px; border-radius:8px; border:1px solid #E0E0E0;">
+                        <span style="color:#666666; font-size:11px; font-weight:600;">Sensor Pass Rate:</span>
+                        <div style="font-size:16px; font-weight:700; color:${result.stats.sensor_pass_count >= 10 ? '#27AE60' : '#E74C3C'};">${result.stats.sensor_pass_count} / 12 Sensors</div>
                     </div>
-                    <div style="background:rgba(12,19,46,0.5); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                        <span style="color:#8E9DBE; font-size:10.5px;">Peak Metal Range:</span>
-                        <div style="font-size:16px; font-weight:700;">${result.stats.min_peak_C}°C – ${result.stats.max_peak_C}°C</div>
+                    <div style="background:#F0F2F5; padding:12px; border-radius:8px; border:1px solid #E0E0E0;">
+                        <span style="color:#666666; font-size:11px; font-weight:600;">Peak Metal Range:</span>
+                        <div style="font-size:16px; font-weight:700; color:#333333;">${result.stats.min_peak_C}°C – ${result.stats.max_peak_C}°C</div>
                     </div>
-                    <div style="background:rgba(12,19,46,0.5); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
-                        <span style="color:#8E9DBE; font-size:10.5px;">Max Envelope Deviation:</span>
-                        <div style="font-size:16px; font-weight:700; color:${result.stats.max_deviation_from_goal_C > 8.0 ? '#FF5252' : '#00E676'};">${result.stats.max_deviation_from_goal_C}°C</div>
+                    <div style="background:#F0F2F5; padding:12px; border-radius:8px; border:1px solid #E0E0E0;">
+                        <span style="color:#666666; font-size:11px; font-weight:600;">Max Envelope Deviation:</span>
+                        <div style="font-size:16px; font-weight:700; color:${result.stats.max_deviation_from_goal_C > 8.0 ? '#E74C3C' : '#27AE60'};">${result.stats.max_deviation_from_goal_C}°C</div>
                     </div>
                 </div>
             `;
@@ -396,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 alertsCountBadge.textContent = "0 Active Alerts";
                 alertsCountBadge.style.background = "rgba(0, 230, 118, 0.15)";
-                alertsCountBadge.style.color = "#00E676";
+                alertsCountBadge.style.color = "#50E3C2";
                 alertsScrollBox.innerHTML = `
                     <div class="empty-alerts">
                         <div class="status-indicator-tag" style="font-weight:700; font-family:var(--font-mono); font-size:11px; color:var(--status-ok); letter-spacing:1px; margin-bottom:6px;">[COMPLIANT]</div>
@@ -416,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const allChip = document.createElement('div');
         allChip.className = `sensor-chip chip-all ${chartInstance.comparisonSensor === null ? 'active' : ''}`;
         allChip.innerHTML = `
-            <span class="chip-color-dot" style="background:#00D2FF;"></span>
+            <span class="chip-color-dot" style="background:#4A90E2;"></span>
             <span>All 12 Sensors (Default)</span>
         `;
         allChip.title = "Display all 12 sensors simultaneously against the standard goal benchmark";
@@ -531,7 +503,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const payload = {
                     trial_csv: activeTrialCSV,
                     goal_csv: activeGoalCSV,
-                    config_csv: activeConfigCSV,
                     sample_id: currentSampleId
                 };
 
@@ -560,22 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (btnExportJson) {
-        btnExportJson.addEventListener('click', () => {
-            if (!lastValidationResult) {
-                showToast("No validation telemetry available yet.", "error");
-                return;
-            }
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(lastValidationResult, null, 2));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `Virtual_EMT_Telemetry_${Date.now()}.json`);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-            showToast("Downloaded Raw Telemetry JSON", "success");
-        });
-    }
 
     // ── 11. Helper Utilities ─────────────────────────────────────────────
     function setLoadingState(isLoading) {

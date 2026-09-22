@@ -262,7 +262,7 @@ def list_sample_csvs():
             "interval": "1 second",
             "expected_verdict": "GO (OK)",
             "badge": "Nominal 1s",
-            "badge_color": "#00E676",
+            "badge_color": "#50E3C2",
             "type": "trial"
         },
         {
@@ -272,7 +272,7 @@ def list_sample_csvs():
             "interval": "15 seconds",
             "expected_verdict": "GO (OK)",
             "badge": "Nominal 15s",
-            "badge_color": "#00E676",
+            "badge_color": "#50E3C2",
             "type": "trial"
         },
         {
@@ -282,7 +282,7 @@ def list_sample_csvs():
             "interval": "60 seconds (1 min)",
             "expected_verdict": "GO (OK)",
             "badge": "Nominal 1 min",
-            "badge_color": "#00E676",
+            "badge_color": "#50E3C2",
             "type": "trial"
         },
         {
@@ -398,13 +398,13 @@ def export_csv_certificate(req: CSVValidationRequest):
     stats = val_res.get("stats", {})
     verdict = val_res.get("verdict", "NG (NO-GO)")
     is_pass = val_res.get("is_pass", False)
-    badge_bg = "#00E676" if is_pass else "#FF1744"
+    badge_bg = "#50E3C2" if is_pass else "#FF1744"
     badge_color = "#0A0D14" if is_pass else "#FFFFFF"
 
     # Build detected zone rows
     zone_rows = ""
     for z in val_res.get("zone_comparison_table", []):
-        st_color = "#00E676" if z["status"] == "PASS" else ("#FFA000" if z["status"] == "WARN" else "#FF5252")
+        st_color = "#50E3C2" if z["status"] == "PASS" else ("#FFA000" if z["status"] == "WARN" else "#FF5252")
         zone_rows += f"""
         <tr>
             <td style="font-weight:600;">{z['name']}</td>
@@ -421,7 +421,7 @@ def export_csv_certificate(req: CSVValidationRequest):
     # Build sensor rows
     sensor_rows = ""
     for s in val_res.get("sensor_audit_table", []):
-        s_col = "#00E676" if s["status"] == "PASS" else "#FF5252"
+        s_col = "#50E3C2" if s["status"] == "PASS" else "#FF5252"
         reasons = "<br>".join(s.get("failure_reasons", [])) or "None"
         sensor_rows += f"""
         <tr>
@@ -450,7 +450,7 @@ def export_csv_certificate(req: CSVValidationRequest):
             .container {{ max-width: 960px; margin: 0 auto; background: #121722; border: 1px solid #232c3d; border-radius: 8px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }}
             .header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #232c3d; padding-bottom: 16px; margin-bottom: 24px; }}
             .brand {{ font-size: 20px; font-weight: 800; letter-spacing: 1px; color: #FFFFFF; }}
-            .sub {{ font-size: 11px; color: #00E5FF; font-family: monospace; letter-spacing: 1.5px; }}
+            .sub {{ font-size: 11px; color: #4A90E2; font-family: monospace; letter-spacing: 1.5px; }}
             .verdict-pill {{ background: {badge_bg}; color: {badge_color}; font-size: 16px; font-weight: 800; padding: 8px 18px; border-radius: 20px; display: inline-block; letter-spacing: 0.5px; }}
             .kpi-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }}
             .kpi-card {{ background: #171e2c; border: 1px solid #232c3d; border-radius: 6px; padding: 14px; }}
@@ -459,8 +459,8 @@ def export_csv_certificate(req: CSVValidationRequest):
             table {{ width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }}
             th, td {{ padding: 10px 12px; text-align: left; border-bottom: 1px solid #1f2737; }}
             th {{ background: #171e2c; color: #8C9BAE; font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }}
-            code {{ font-family: monospace; color: #00E5FF; }}
-            .section-title {{ font-size: 14px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 28px; margin-bottom: 8px; border-left: 3px solid #00E5FF; padding-left: 8px; }}
+            code {{ font-family: monospace; color: #4A90E2; }}
+            .section-title {{ font-size: 14px; font-weight: 700; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 28px; margin-bottom: 8px; border-left: 3px solid #4A90E2; padding-left: 8px; }}
             @media print {{ body {{ background: #FFF; color: #000; }} .container {{ background: #FFF; border: none; box-shadow: none; padding: 0; }} th {{ background: #EEE; color: #000; }} td {{ border-bottom: 1px solid #DDD; }} }}
         </style>
     </head>
@@ -487,7 +487,7 @@ def export_csv_certificate(req: CSVValidationRequest):
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-title">Cure Quality Index (CQI)</div>
-                    <div class="kpi-val" style="color:#00E5FF;">{val_res.get('cqi_score', 0)}%</div>
+                    <div class="kpi-val" style="color:#4A90E2;">{val_res.get('cqi_score', 0)}%</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-title">Cross-Body Thermal Spread</div>

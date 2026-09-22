@@ -37,7 +37,7 @@ OVEN_ZONES = [
         "stage": "Entry Ramp",
         "type": "boundary_zone",
         "sensor_cols": ["T_LH_Q_P", "T_LH_T_G"],
-        "color": "#00E5FF",
+        "color": "#4A90E2",
     },
     {
         "id": 2,
@@ -73,7 +73,7 @@ OVEN_ZONES = [
         "stage": "Cooling Exit",
         "type": "boundary_zone",
         "sensor_cols": ["T_RH_T_G", "T_RH_Q_P"],
-        "color": "#00E676",
+        "color": "#50E3C2",
     },
 ]
 

@@ -1,10 +1,10 @@
-# 🏭 Stellantis Virtual EMT — AI Digital Twin & Predictive Paint Oven Thermal Validation System
+# Stellantis Virtual EMT — AI Digital Twin and Predictive Paint Oven Thermal Validation System
 
 An end-to-end industrial digital twin, thermodynamic simulation, and machine learning system for validating vehicle thermal curing across automotive paint shop ovens (**ED**, **Sealer**, and **Topcoat**), replacing legacy physical body-bolted trials with real-time AI validation.
 
 ---
 
-## 📌 Executive Overview
+## Executive Overview
 
 In automotive manufacturing plants (**Stellantis**), vehicle body corrosion resistance, structural adhesive strength, and showroom paint gloss depend entirely on the thermal curing process inside three critical paint shop ovens:
 1. **ED Oven (Cathodic Electrodeposition Primer)**: ~$180°C–205°C (Anti-corrosion barrier)
@@ -17,7 +17,7 @@ In automotive manufacturing plants (**Stellantis**), vehicle body corrosion resi
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```
    ┌────────────────────────┐
@@ -57,7 +57,7 @@ In automotive manufacturing plants (**Stellantis**), vehicle body corrosion resi
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 ├── dashboard/                  # Interactive real-time Web Dashboard
@@ -90,7 +90,7 @@ In automotive manufacturing plants (**Stellantis**), vehicle body corrosion resi
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Prerequisites
 - Python 3.10+
@@ -132,7 +132,7 @@ python run_phase3_validation.py
 
 ---
 
-## 📊 Key Highlights & Performance
+## Key Highlights and Performance
 
 - **Mean Absolute Error (MAE)**: $< 1.5^\circ\text{C}$ across all 12 thermocouple zones.
 - **Classification Accuracy**: $> 99.2\%$ for OK / NG pass-fail verdicts.
@@ -141,6 +141,6 @@ python run_phase3_validation.py
 
 ---
 
-## 📄 License & Attribution
+## License and Attribution
 Developed for the **Stellantis Virtual EMT Predictive Paint Oven Thermal Validation Initiative**.
 All rights reserved.

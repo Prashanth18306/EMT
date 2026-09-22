@@ -137,7 +137,7 @@ class ZoneDetector:
                 "duration_s": round(z1_end_time, 1),
                 "start_mmss": "00:00",
                 "end_mmss": self._to_mmss(z1_end_time),
-                "color": "#00E5FF",
+                "color": "#4A90E2",
             },
             {
                 "zone_id": 2,
@@ -185,7 +185,7 @@ class ZoneDetector:
                 "duration_s": round(total_time - z5_start_time, 1),
                 "start_mmss": self._to_mmss(z5_start_time),
                 "end_mmss": self._to_mmss(total_time),
-                "color": "#00E676",
+                "color": "#50E3C2",
             },
         ]
 
@@ -225,11 +225,11 @@ class ZoneDetector:
             "peak_time_s": t3,
             "peak_time_mmss": self._to_mmss(t3),
             "zones": [
-                {"zone_id": 1, "name": "Zone 1 (Entry Ramp)",   "start_s": 0.0, "end_s": t1, "start_mmss": "00:00", "end_mmss": self._to_mmss(t1), "color": "#00E5FF", "peak_temp_C": 0.0},
+                {"zone_id": 1, "name": "Zone 1 (Entry Ramp)",   "start_s": 0.0, "end_s": t1, "start_mmss": "00:00", "end_mmss": self._to_mmss(t1), "color": "#4A90E2", "peak_temp_C": 0.0},
                 {"zone_id": 2, "name": "Zone 2 (Preheat)",      "start_s": t1,  "end_s": t2, "start_mmss": self._to_mmss(t1), "end_mmss": self._to_mmss(t2), "color": "#2979FF", "peak_temp_C": 0.0},
                 {"zone_id": 3, "name": "Zone 3 (Soak In)",      "start_s": t2,  "end_s": t3, "start_mmss": self._to_mmss(t2), "end_mmss": self._to_mmss(t3), "color": "#E040FB", "peak_temp_C": 0.0},
                 {"zone_id": 4, "name": "Zone 4 (Cure Hold)",    "start_s": t3,  "end_s": t4, "start_mmss": self._to_mmss(t3), "end_mmss": self._to_mmss(t4), "color": "#FF1744", "peak_temp_C": 0.0},
-                {"zone_id": 5, "name": "Zone 5 (Cooling Exit)", "start_s": t4,  "end_s": total_time, "start_mmss": self._to_mmss(t4), "end_mmss": self._to_mmss(total_time), "color": "#00E676", "peak_temp_C": 0.0},
+                {"zone_id": 5, "name": "Zone 5 (Cooling Exit)", "start_s": t4,  "end_s": total_time, "start_mmss": self._to_mmss(t4), "end_mmss": self._to_mmss(total_time), "color": "#50E3C2", "peak_temp_C": 0.0},
             ],
             "transition_points_s": [0.0, t1, t2, t3, t4, total_time]
         }
