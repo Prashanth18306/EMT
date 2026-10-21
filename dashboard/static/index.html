@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellantis Virtual EMT — Paint Oven Predictive Validation System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Open+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="top-nav" id="top-navbar">
+            <div class="nav-brand">
+                <div class="brand-logo">
+                    <span class="logo-badge">V-EMT</span>
+                    <div class="logo-text">
+                        <span class="brand-name">STELLANTIS</span>
+                        <span class="brand-sub">VIRTUAL EMT PROCESS ENGINE v4.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Actions -->
+            <div class="nav-actions">
+                <button id="btn-export-cert" class="btn btn-outline" title="Export Certified Process Quality Report">
+                    Export Quality Report
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body: Sidebar (Controls) + Workspace (Dashboard) -->
+        <div class="main-container">
+            <!-- Left Sidebar: CSV Telemetry & Goal Benchmarks -->
+            <aside class="control-sidebar" id="control-sidebar">
+                <div class="sidebar-header">
+                    <h2>CSV Data Ingestion</h2>
+                    <span class="sidebar-sub">Continuous Paint Shop Validation Engine</span>
+                </div>
+
+                <form id="csv-form" onsubmit="return false;">
+                    <!-- Quick Load Presets Dropdown -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>Process Benchmarks</h3>
+                            <span class="badge info">Reference</span>
+                        </div>
+                        <div class="form-field">
+                            <select id="preset-select" class="form-control" style="font-size: 11.5px; padding: 8px;">
+                                <option value="trial_normal_sample.csv" selected>[PASS] Nominal Curing Cycle (1s Interval - 40 min)</option>
+                                <option value="trial_ed_normal_15s.csv">[PASS] Nominal Curing Cycle (15s Interval - 40 min)</option>
+                                <option value="trial_sparse_1min_sample.csv">[PASS] Nominal Curing Cycle (60s Interval - 40 min)</option>
+                                <option value="trial_burner_trip_sample.csv">[FAIL] Combustion Trip: Zone 2 Burner Flameout</option>
+                                <option value="trial_conveyor_fast_sample.csv">[FAIL] Line Excursion: Conveyor Overspeed 2.85 m/min</option>
+                                <option value="trial_fan_degradation_sample.csv">[FAIL] Thermal Imbalance: Fan Flow Degradation</option>
+                                <option value="trial_burner_overshoot_sample.csv">[FAIL] Film Degradation: Setpoint Overshoot</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 1. Trial Sensor CSV Ingestion -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>1. Actual Sensor Telemetry</h3>
+                            <span class="badge warning" id="trial-source-badge">Trial Run</span>
+                        </div>
+                        <p style="font-size: 10.5px; color: var(--text-secondary); margin-bottom: 5px; line-height: 1.35;">
+                            Supports 1s to 60s sampling (00:00 to 40:00 duration).
+                        </p>
+                        <div class="csv-dropzone" id="dropzone-trial">
+                            <div class="csv-dropzone-text">Upload or Browse Trial CSV</div>
+                            <div class="csv-dropzone-sub">Channels: timestamp, temperature 1-12, SCADA actuators</div>
+                            <input type="file" id="file-trial-csv" accept=".csv" style="display:none;">
+                        </div>
+                        <div id="pill-trial-csv" class="csv-file-pill">
+                            <span class="csv-file-name" id="trial-file-name">trial_normal_sample.csv</span>
+                            <span class="csv-file-meta" id="trial-file-meta">2401 pts • 1s</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Standard Goal Benchmark CSV -->
+                    <div class="control-card">
+                        <div class="card-title-row">
+                            <h3>2. Certified Target Benchmark</h3>
+                            <span class="badge info">Goal Run</span>
+                        </div>
+                        <div class="csv-dropzone" id="dropzone-goal">
+                            <div class="csv-dropzone-text">Upload or Browse Goal CSV</div>
+                            <div class="csv-dropzone-sub">Default: Certified OEM Benchmark Curve</div>
+                            <input type="file" id="file-goal-csv" accept=".csv" style="display:none;">
+                        </div>
+                        <div id="pill-goal-csv" class="csv-file-pill">
+                            <span class="csv-file-name" id="goal-file-name">standard_goal_sample.csv</span>
+                            <span class="csv-file-meta" id="goal-file-meta">2401 pts • 40 min</span>
+                        </div>
+                    </div>
+
+
+                    <!-- Primary Action Button -->
+                    <button type="button" id="btn-run-simulation" class="btn btn-primary btn-block" style="padding: 10px; font-size: 12px; margin-top: 4px;">
+                        VALIDATE PROCESS AGAINST BENCHMARK
+                    </button>
+                </form>
+            </aside>
+
+            <!-- Right Workspace: Visual Dashboard -->
+            <main class="dashboard-workspace" id="dashboard-workspace">
+                <!-- Dual-Verification KPI Banner -->
+                <section class="kpi-banner-grid" id="kpi-banner-grid">
+                    <!-- Status Verdict Card -->
+                    <div class="kpi-card verdict-card status-pass" id="kpi-verdict-card">
+                        <div class="verdict-badge-row">
+                            <span class="status-indicator-dot" id="status-indicator-dot"></span>
+                            <span class="verdict-pill" id="verdict-pill">GO (OK)</span>
+                        </div>
+                        <div class="verdict-title" id="verdict-title">Automotive Quality Pass</div>
+                        <div class="verdict-subtitle" id="verdict-subtitle">Trial Curve Validated Against Standard Goal Benchmark</div>
+                    </div>
+
+                    <!-- Cure Quality Index (CQI) -->
+                    <div class="kpi-card cqi-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Cure Quality Index (CQI)</span>
+                            <span class="kpi-tag" id="cqi-tier">GOLD TIER</span>
+                        </div>
+                        <div class="cqi-display">
+                            <div class="cqi-value" id="cqi-value">93.8%</div>
+                            <div class="cqi-bar-track">
+                                <div class="cqi-bar-fill" id="cqi-bar-fill" style="width: 93.8%;"></div>
+                            </div>
+                        </div>
+                        <span class="kpi-caption">Envelope Tracking & Kinetics Margin</span>
+                    </div>
+
+                    <!-- Thermal Uniformity / Spread -->
+                    <div class="kpi-card spread-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Cross-Body Thermal Spread</span>
+                            <span class="kpi-tag" id="spread-tag">UNIFORM</span>
+                        </div>
+                        <div class="kpi-big-num" id="kpi-spread-val">2.5 °C</div>
+                        <span class="kpi-caption" id="kpi-spread-limit">Limit: ≤ 22.0 °C (Max allowable 25°C)</span>
+                    </div>
+
+                    <!-- Arrhenius Cure Index -->
+                    <div class="kpi-card ci-card">
+                        <div class="card-kpi-header">
+                            <span class="kpi-title">Min Arrhenius Cure Index</span>
+                            <span class="kpi-tag">k = 12.0</span>
+                        </div>
+                        <div class="kpi-big-num" id="kpi-ci-val">96.9</div>
+                        <span class="kpi-caption" id="kpi-ci-caption">Chemical Threshold: ≥ 22.0</span>
+                    </div>
+                </section>
+
+                <!-- Interactive Thermal Profile Canvas & Toggles -->
+                <section class="chart-section card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <h2>Continuous Oven Zone Thermal Profiles (00:00 to 40:00)</h2>
+                            <p class="chart-subtitle">12-Sensor Trial Data vs Standard Goal Golden Benchmark & Tolerances with Dynamic Automatic Zone Detection</p>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="btn btn-xs active" id="btn-view-all">All Sensors</button>
+                            <button class="btn btn-xs" id="btn-view-core">Cure Zones (Z3-Z4)</button>
+                            <button class="btn btn-xs" id="btn-view-extremity">Ramp & Exit (Z1, Z2, Z5)</button>
+                            <button class="btn btn-xs" id="btn-toggle-envelope">Show Tolerance Envelope</button>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Wrapper -->
+                    <div class="chart-canvas-container" id="chart-canvas-container">
+                        <canvas id="emt-chart-canvas" width="1000" height="420"></canvas>
+                        <div id="chart-tooltip" class="chart-tooltip"></div>
+                    </div>
+
+                    <!-- Sensor Color Toggles Bar -->
+                    <div class="sensor-chips-bar" id="sensor-chips-bar">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </section>
+
+                <!-- Two-Column Lower Grid: Subsystem Health & Early Warnings -->
+                <section class="diagnostics-grid">
+                    <!-- Left: Subsystem Health Attribution -->
+                    <div class="card subsystem-card">
+                        <div class="card-header-clean">
+                            <h3>Operational SCADA Telemetry</h3>
+                            <span class="sub-caption">Trial Actuator Monitoring</span>
+                        </div>
+                        <div class="subsystem-bars-list" id="subsystem-bars-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                        <div class="diagnosis-box" id="diagnosis-box">
+                            <div class="diag-header">Quality & Process Assessment:</div>
+                            <div class="diag-text" id="diag-remedy-text">All parameters aligned with certified Standard Goal benchmark.</div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Early Warning Alerts & Operational Violations -->
+                    <div class="card alerts-card">
+                        <div class="card-header-clean">
+                            <h3>Early Warning Alerts & Standards Compliance</h3>
+                            <span class="alerts-count-badge" id="alerts-count-badge">0 Active Alerts</span>
+                        </div>
+                        <div class="alerts-scroll-box" id="alerts-scroll-box">
+                            <div class="empty-alerts">
+                                <span class="status-indicator-tag" style="font-weight:700; color:#50E3C2; font-size:11px; margin-bottom:6px; display:inline-block;">STATUS: COMPLIANT</span>
+                                <p>All thermal, kinetic, and actuator parameters are currently operating within nominal quality bounds.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5-Zone Process Quality Audit Table -->
+                <section class="audit-table-section card">
+                    <div class="card-header-clean">
+                        <div class="audit-title-wrap">
+                            <h3>DYNAMIC AUTOMATIC ZONE DETECTION & GOAL AUDIT</h3>
+                            <span class="sub-caption">Gradient-Segmented Process Zones (Zone 1 to Zone 5) Compared Symmetrically against Standard Goal Benchmark</span>
+                        </div>
+                        <div class="audit-stat-chips">
+                            <button class="btn btn-xs active" id="btn-show-zones-table" style="font-size:11px;">Detected Zones</button>
+                            <button class="btn btn-xs" id="btn-show-sensors-table" style="font-size:11px;">12-Sensor Details</button>
+                        </div>
+                    </div>
+
+                    <!-- Table 1: Detected Zones -->
+                    <div class="table-responsive" id="table-zones-container">
+                        <table class="audit-table" id="zones-audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Oven Zone</th>
+                                    <th>Process Stage</th>
+                                    <th>Trial Timing (0-40m)</th>
+                                    <th>Goal Benchmark</th>
+                                    <th>Trial Peak</th>
+                                    <th>Goal Peak</th>
+                                    <th>Δ Peak</th>
+                                    <th>Zone Compliance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-zones-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table 2: 12-Sensor Details -->
+                    <div class="table-responsive" id="table-sensors-container" style="display:none;">
+                        <table class="audit-table" id="sensors-audit-table">
+                            <thead>
+                                <tr>
+                                    <th>Sensor Location</th>
+                                    <th>Channel</th>
+                                    <th>Trial Peak</th>
+                                    <th>Goal Peak</th>
+                                    <th>Δ Peak</th>
+                                    <th>Peak Time</th>
+                                    <th>Cure Index (CI)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-sensors-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="/static/js/chart_renderer.js?v=4.0.3"></script>
+    <script src="/static/js/dashboard.js?v=4.0.3"></script>
+</body>
+</html>
