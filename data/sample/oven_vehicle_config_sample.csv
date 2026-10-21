@@ -1,0 +1,2 @@
+process_purpose,total_time_s,cure_threshold,target_peak_min,target_peak_max,cure_index_ok,cure_time_min_ok,zone_1_setpoint_entry_ramp,zone_2_setpoint_preheat,zone_3_setpoint_soak_in,zone_4_setpoint_cure_hold,zone_5_setpoint_cooling_exit,critical_band_low,critical_band_mid,critical_band_high,body_platform_name,relative_mass_factor,thermal_inertia_lag,peak_temp_offset,body_construction_note
+Electrodeposition Primer Oven,2400,165.0,185.0,205.0,22.0,12.0,140.0,175.0,190.0,190.0,180.0,150.0,165.0,185.0,CC21,1.0,0,-0.0,Lightweight sheet and structural BIW

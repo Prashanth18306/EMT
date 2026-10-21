@@ -150,14 +150,33 @@ def list_sample_csvs():
     ]
     return {"samples": samples, "default_goal": "standard_goal_sample.csv", "default_config": "oven_vehicle_config_sample.csv"}
 
+FILENAME_ALIASES = {
+    "trial_normal_sample.csv": "trial_normal_ed.csv",
+    "trial_sparse_1min_sample.csv": "trial_ed_normal_60s.csv",
+    "standard_goal_sample.csv": "standard_goal_ED_CC21.csv",
+    "oven_vehicle_config_sample.csv": "oven_vehicle_config_ED_CC21.csv",
+    "trial_normal_ed.csv": "trial_normal_sample.csv",
+    "trial_ed_normal_60s.csv": "trial_sparse_1min_sample.csv",
+    "standard_goal_ED_CC21.csv": "standard_goal_sample.csv",
+    "oven_vehicle_config_ED_CC21.csv": "oven_vehicle_config_sample.csv",
+}
+
+def resolve_sample_file(filename: str) -> str:
+    safe_name = os.path.basename(filename)
+    path = os.path.join(SAMPLE_DIR, safe_name)
+    if os.path.exists(path):
+        return path
+    alias = FILENAME_ALIASES.get(safe_name)
+    if alias:
+        alias_path = os.path.join(SAMPLE_DIR, alias)
+        if os.path.exists(alias_path):
+            return alias_path
+    raise HTTPException(status_code=404, detail=f"Sample CSV {safe_name} not found.")
+
 @app.get("/api/sample-csv/{filename}")
 def get_sample_csv_content(filename: str):
     """Retrieve raw text content of a sample CSV file."""
-    # Sanitize filename
-    safe_name = os.path.basename(filename)
-    path = os.path.join(SAMPLE_DIR, safe_name)
-    if not os.path.exists(path):
-        raise HTTPException(status_code=404, detail=f"Sample CSV {safe_name} not found.")
+    path = resolve_sample_file(filename)
     with open(path, "r", encoding="utf-8") as f:
         content = f.read()
     return Response(content=content, media_type="text/csv")
@@ -173,13 +192,11 @@ def validate_csv(req: CSVValidationRequest):
         if req.trial_csv and len(req.trial_csv.strip()) > 0:
             trial_source = req.trial_csv
         elif req.sample_id:
-            sample_path = os.path.join(SAMPLE_DIR, os.path.basename(req.sample_id))
-            if not os.path.exists(sample_path):
-                raise HTTPException(status_code=404, detail=f"Sample {req.sample_id} not found.")
+            sample_path = resolve_sample_file(req.sample_id)
             with open(sample_path, "r", encoding="utf-8") as f:
                 trial_source = f.read()
         else:
-            default_trial = os.path.join(SAMPLE_DIR, "trial_normal_sample.csv")
+            default_trial = resolve_sample_file("trial_normal_sample.csv")
             with open(default_trial, "r", encoding="utf-8") as f:
                 trial_source = f.read()
 
@@ -187,7 +204,7 @@ def validate_csv(req: CSVValidationRequest):
         if req.goal_csv and len(req.goal_csv.strip()) > 0:
             goal_source = req.goal_csv
         else:
-            default_goal = os.path.join(SAMPLE_DIR, "standard_goal_sample.csv")
+            default_goal = resolve_sample_file("standard_goal_sample.csv")
             with open(default_goal, "r", encoding="utf-8") as f:
                 goal_source = f.read()
 
@@ -195,7 +212,7 @@ def validate_csv(req: CSVValidationRequest):
         if req.config_csv and len(req.config_csv.strip()) > 0:
             config_source = req.config_csv
         else:
-            default_config = os.path.join(SAMPLE_DIR, "oven_vehicle_config_sample.csv")
+            default_config = resolve_sample_file("oven_vehicle_config_sample.csv")
             with open(default_config, "r", encoding="utf-8") as f:
                 config_source = f.read()
 
